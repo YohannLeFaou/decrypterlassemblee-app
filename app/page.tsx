@@ -5,19 +5,32 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
-      <header style={{ borderBottom: "2px solid #1a1a1a" }} className="bg-[#f5f0e8] px-6 py-4">
+      <header style={{ borderBottom: "2px solid #4a4a4a" }} className="bg-[#f5f0e8] px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-baseline justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "Georgia, serif" }}>
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3" style={{ fontFamily: "Georgia, serif" }}>
+              <span>🏛️</span>
               Décrypter l&apos;Assemblée
             </h1>
             <p className="text-sm mt-0.5" style={{ color: "#666", fontFamily: "Arial, sans-serif" }}>
               16e législature · juin 2022 – juin 2024
             </p>
           </div>
-          <nav className="flex gap-6 text-sm" style={{ fontFamily: "Arial, sans-serif" }}>
-            <a href="#investigations" className="hover:underline">Investigations</a>
-            <a href="#chat" className="hover:underline">Posez une question</a>
+          <nav className="flex gap-4 text-sm" style={{ fontFamily: "Arial, sans-serif" }}>
+            <a
+              href="#investigations"
+              className="px-4 py-2 rounded-sm font-bold hover:opacity-80 transition-opacity"
+              style={{ background: "#4a4a4a", color: "#f5f0e8" }}
+            >
+              Investigations
+            </a>
+            <a
+              href="#chat"
+              className="px-4 py-2 rounded-sm font-bold hover:opacity-80 transition-opacity"
+              style={{ background: "#4a4a4a", color: "#f5f0e8" }}
+            >
+              Poser une question
+            </a>
           </nav>
         </div>
       </header>
@@ -25,7 +38,7 @@ export default function Home() {
       {/* Bandeau avertissement */}
       <div
         className="text-center text-xs py-2 px-4"
-        style={{ background: "#2a2a2a", color: "#e0d8c8", fontFamily: "Arial, sans-serif" }}
+        style={{ background: "#4a4a4a", color: "#e0d8c8", fontFamily: "Arial, sans-serif" }}
       >
         ⚠️ Données limitées à la 16e législature (juin 2022 – juin 2024). La 17e législature n&apos;est pas encore indexée.
       </div>
@@ -35,9 +48,8 @@ export default function Home() {
         {/* Intro */}
         <section className="mb-12">
           <p className="text-lg leading-relaxed max-w-2xl" style={{ color: "#555", fontFamily: "Georgia, serif" }}>
-            Les votes de l&apos;Assemblée nationale sont publics — mais illisibles. Ce site les explore
-            avec l&apos;aide d&apos;une IA pour révéler les alliances surprises, les dissidences et
-            les fractures politiques réelles.
+            Les votes de l&apos;Assemblée nationale sont publics, mais illisibles. Ce site permet d&apos;explorer,
+            grâce à l&apos;IA, l&apos;activité de nos députés dans l&apos;hémicycle.
           </p>
         </section>
 
@@ -47,7 +59,7 @@ export default function Home() {
             className="text-xs font-bold uppercase tracking-widest mb-6 pb-2"
             style={{ borderBottom: "1px solid #d4c9b0", color: "#888", fontFamily: "Arial, sans-serif" }}
           >
-            Investigations
+            Exemples d&apos;investigations réalisées par l&apos;IA
           </h2>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -66,7 +78,7 @@ export default function Home() {
                 </span>
                 <h3
                   className="text-lg font-bold mt-2 mb-3 leading-snug"
-                  style={{ color: "#1a1a1a", fontFamily: "Georgia, serif" }}
+                  style={{ color: "#4a4a4a", fontFamily: "Georgia, serif" }}
                 >
                   {inv.title}
                 </h3>
@@ -89,7 +101,7 @@ export default function Home() {
             className="text-xs font-bold uppercase tracking-widest mb-6 pb-2"
             style={{ borderBottom: "1px solid #d4c9b0", color: "#888", fontFamily: "Arial, sans-serif" }}
           >
-            Posez une question à l&apos;IA
+            Que voulez-vous savoir à propos de vos députés ?
           </h2>
 
           <div className="p-8 rounded-sm" style={{ background: "#fff", border: "1px solid #d4c9b0" }}>

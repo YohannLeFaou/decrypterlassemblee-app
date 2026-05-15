@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- fond beige -->
+  <rect width="32" height="32" rx="4" fill="#f5f0e8"/>
+  <!-- fronton triangulaire -->
+  <polygon points="16,3 28,10 4,10" fill="#4a4a4a"/>
+  <!-- entablement -->
+  <rect x="4" y="10" width="24" height="2.5" fill="#4a4a4a"/>
+  <!-- colonnes -->
+  <rect x="6"  y="12.5" width="2.5" height="12" fill="#4a4a4a"/>
+  <rect x="11" y="12.5" width="2.5" height="12" fill="#4a4a4a"/>
+  <rect x="16" y="12.5" width="2.5" height="12" fill="#4a4a4a"/>
+  <rect x="21" y="12.5" width="2.5" height="12" fill="#4a4a4a"/>
+  <!-- stylobate (base) -->
+  <rect x="3" y="24.5" width="26" height="2.5" fill="#4a4a4a"/>
+  <rect x="2" y="27"   width="28" height="2"   fill="#4a4a4a"/>
+</svg>

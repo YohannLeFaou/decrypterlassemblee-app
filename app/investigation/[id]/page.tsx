@@ -35,10 +35,10 @@ export default async function InvestigationPage({
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
-      <header style={{ borderBottom: "2px solid #1a1a1a" }} className="bg-[#f5f0e8] px-6 py-4">
+      <header style={{ borderBottom: "2px solid #4a4a4a" }} className="bg-[#f5f0e8] px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-baseline justify-between">
           <a href="/" style={{ textDecoration: "none" }}>
-            <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "Georgia, serif", color: "#1a1a1a" }}>
+            <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "Georgia, serif", color: "#4a4a4a" }}>
               Décrypter l&apos;Assemblée
             </h1>
           </a>
@@ -60,7 +60,7 @@ export default async function InvestigationPage({
           </span>
           <h2
             className="text-3xl font-bold mt-2 mb-4 leading-tight"
-            style={{ fontFamily: "Georgia, serif", color: "#1a1a1a" }}
+            style={{ fontFamily: "Georgia, serif", color: "#4a4a4a" }}
           >
             {investigation.title}
           </h2>
@@ -97,7 +97,7 @@ export default async function InvestigationPage({
                       </span>
                       <h4
                         className="text-lg font-bold mt-1 leading-snug"
-                        style={{ fontFamily: "Georgia, serif", color: "#1a1a1a" }}
+                        style={{ fontFamily: "Georgia, serif", color: "#4a4a4a" }}
                       >
                         {scrutin.titre}
                       </h4>
@@ -209,7 +209,7 @@ export default async function InvestigationPage({
                     <span className="text-sm font-bold w-5 text-right" style={{ color: "#bbb", fontFamily: "Arial, sans-serif" }}>
                       {i + 1}
                     </span>
-                    <span className="text-sm font-bold" style={{ color: "#1a1a1a", fontFamily: "Arial, sans-serif", minWidth: "3rem" }}>
+                    <span className="text-sm font-bold" style={{ color: "#4a4a4a", fontFamily: "Arial, sans-serif", minWidth: "3rem" }}>
                       {g.sigle}
                     </span>
                     {/* Barre */}
@@ -219,7 +219,7 @@ export default async function InvestigationPage({
                         style={{ width: `${g.taux}%`, background: g.taux >= 95 ? "#2d6a2d" : g.taux >= 90 ? "#b07d00" : "#8b1a1a" }}
                       />
                     </div>
-                    <span className="text-sm font-bold w-14 text-right" style={{ color: "#1a1a1a", fontFamily: "Arial, sans-serif" }}>
+                    <span className="text-sm font-bold w-14 text-right" style={{ color: "#4a4a4a", fontFamily: "Arial, sans-serif" }}>
                       {g.taux} %
                     </span>
                   </div>

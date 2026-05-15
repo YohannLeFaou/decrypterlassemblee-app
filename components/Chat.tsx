@@ -11,6 +11,12 @@ type Message = {
   toolCalls?: ToolCall[];
 };
 
+const SUGGESTED_QUESTIONS = [
+  "Comment peux-tu m'aider ?",
+  "Quels groupes siègent à l'Assemblée nationale ?",
+  "Qui a le plus voté pour en 2023 ?",
+];
+
 const TOOL_LABELS: Record<string, string> = {
   search_depute: "Recherche un député",
   get_depute: "Charge le profil",
@@ -114,7 +120,7 @@ export default function Chat() {
                 <div className="flex justify-end">
                   <div
                     className="px-4 py-3 rounded-sm max-w-lg text-sm"
-                    style={{ background: "#1a1a1a", color: "#f5f0e8", fontFamily: "Arial, sans-serif" }}
+                    style={{ background: "#4a4a4a", color: "#f5f0e8", fontFamily: "Arial, sans-serif" }}
                   >
                     {msg.text}
                   </div>
@@ -144,7 +150,7 @@ export default function Chat() {
                   {msg.text && (
                     <div
                       className="text-sm leading-relaxed prose prose-sm max-w-none"
-                      style={{ color: "#1a1a1a", fontFamily: "Georgia, serif" }}
+                      style={{ color: "#4a4a4a", fontFamily: "Georgia, serif" }}
                     >
                       <ReactMarkdown
                         components={{
@@ -154,7 +160,7 @@ export default function Chat() {
                             </a>
                           ),
                           strong: ({ children }) => (
-                            <strong style={{ fontWeight: 700, color: "#1a1a1a" }}>{children}</strong>
+                            <strong style={{ fontWeight: 700, color: "#4a4a4a" }}>{children}</strong>
                           ),
                           em: ({ children }) => (
                             <em style={{ fontStyle: "italic" }}>{children}</em>
@@ -198,6 +204,28 @@ export default function Chat() {
         </div>
       )}
 
+      {/* Questions suggérées */}
+      {messages.length === 0 && (
+        <div className="flex flex-wrap gap-2 mb-3">
+          {SUGGESTED_QUESTIONS.map((q) => (
+            <button
+              key={q}
+              onClick={() => { setInput(q); }}
+              className="text-xs px-3 py-2 rounded-sm hover:opacity-80 transition-opacity"
+              style={{
+                border: "1px solid #e0dbd0",
+                background: "#eeebe4",
+                color: "#777",
+                fontFamily: "Arial, sans-serif",
+                cursor: "pointer",
+              }}
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Input */}
       <div className="flex gap-3">
         <input
@@ -205,7 +233,7 @@ export default function Chat() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendQuestion()}
-          placeholder="Ex : Comment a voté le RN sur la réforme des retraites ?"
+          placeholder="Ex : Combien y a-t-il de groupes différents à l'Assemblée ?"
           disabled={loading}
           className="flex-1 px-4 py-3 text-sm rounded-sm"
           style={{
@@ -221,7 +249,7 @@ export default function Chat() {
           disabled={loading || !input.trim()}
           className="px-5 py-3 text-sm font-bold rounded-sm"
           style={{
-            background: "#1a1a1a",
+            background: "#4a4a4a",
             color: "#f5f0e8",
             fontFamily: "Arial, sans-serif",
             opacity: loading || !input.trim() ? 0.4 : 1,
