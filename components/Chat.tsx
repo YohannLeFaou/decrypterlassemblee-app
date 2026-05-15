@@ -1,0 +1,239 @@
+"use client";
+
+import { useState, useRef } from "react";
+import ReactMarkdown from "react-markdown";
+
+type ToolCall = { name: string; done: boolean };
+
+type Message = {
+  role: "user" | "assistant";
+  text: string;
+  toolCalls?: ToolCall[];
+};
+
+const TOOL_LABELS: Record<string, string> = {
+  search_depute: "Recherche un député",
+  get_depute: "Charge le profil",
+  get_votes_depute: "Charge les votes",
+  get_synthese_depute: "Charge les statistiques",
+  get_scrutin: "Charge un scrutin",
+  list_groupes: "Liste les groupes",
+  get_membres_groupe: "Liste les membres du groupe",
+  search_interventions: "Recherche des interventions",
+  suggest_slug: "Construit le slug",
+};
+
+export default function Chat() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+
+  async function sendQuestion() {
+    const question = input.trim();
+    if (!question || loading) return;
+
+    setInput("");
+    setLoading(true);
+
+    const userMessage: Message = { role: "user", text: question };
+    const assistantMessage: Message = { role: "assistant", text: "", toolCalls: [] };
+    setMessages((prev) => [...prev, userMessage, assistantMessage]);
+
+    const abort = new AbortController();
+    abortRef.current = abort;
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+        signal: abort.signal,
+      });
+
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = JSON.parse(line.slice(6));
+
+          setMessages((prev) => {
+            const msgs = [...prev];
+            const last = { ...msgs[msgs.length - 1] };
+
+            if (data.type === "text") {
+              last.text += data.text;
+            } else if (data.type === "tool_call") {
+              last.toolCalls = [...(last.toolCalls ?? []), { name: data.name, done: false }];
+            } else if (data.type === "tool_result") {
+              const tools = [...(last.toolCalls ?? [])];
+              const idx = tools.findLastIndex((t) => t.name === data.name && !t.done);
+              if (idx !== -1) tools[idx] = { ...tools[idx], done: true };
+              last.toolCalls = tools;
+            }
+
+            msgs[msgs.length - 1] = last;
+            return msgs;
+          });
+        }
+      }
+    } catch (err) {
+      if ((err as Error).name !== "AbortError") {
+        setMessages((prev) => {
+          const msgs = [...prev];
+          msgs[msgs.length - 1] = {
+            ...msgs[msgs.length - 1],
+            text: "Une erreur est survenue. Réessayez.",
+          };
+          return msgs;
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div>
+      {/* Historique */}
+      {messages.length > 0 && (
+        <div className="mb-6 flex flex-col gap-4">
+          {messages.map((msg, i) => (
+            <div key={i}>
+              {msg.role === "user" ? (
+                <div className="flex justify-end">
+                  <div
+                    className="px-4 py-3 rounded-sm max-w-lg text-sm"
+                    style={{ background: "#1a1a1a", color: "#f5f0e8", fontFamily: "Arial, sans-serif" }}
+                  >
+                    {msg.text}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  {/* Tool calls */}
+                  {msg.toolCalls && msg.toolCalls.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {msg.toolCalls.map((t, j) => (
+                        <span
+                          key={j}
+                          className="text-xs px-2 py-1 rounded-sm"
+                          style={{
+                            background: t.done ? "#e8f0e8" : "#f5f0e8",
+                            border: `1px solid ${t.done ? "#a0c0a0" : "#d4c9b0"}`,
+                            color: t.done ? "#2d6a2d" : "#888",
+                            fontFamily: "Arial, sans-serif",
+                          }}
+                        >
+                          {t.done ? "✓" : "⋯"} {TOOL_LABELS[t.name] ?? t.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {/* Réponse */}
+                  {msg.text && (
+                    <div
+                      className="text-sm leading-relaxed prose prose-sm max-w-none"
+                      style={{ color: "#1a1a1a", fontFamily: "Georgia, serif" }}
+                    >
+                      <ReactMarkdown
+                        components={{
+                          a: ({ href, children }) => (
+                            <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: "#8b1a1a", textDecoration: "underline" }}>
+                              {children}
+                            </a>
+                          ),
+                          strong: ({ children }) => (
+                            <strong style={{ fontWeight: 700, color: "#1a1a1a" }}>{children}</strong>
+                          ),
+                          em: ({ children }) => (
+                            <em style={{ fontStyle: "italic" }}>{children}</em>
+                          ),
+                          table: ({ children }) => (
+                            <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.85em", fontFamily: "Arial, sans-serif" }}>{children}</table>
+                          ),
+                          th: ({ children }) => (
+                            <th style={{ borderBottom: "2px solid #d4c9b0", padding: "4px 8px", textAlign: "left", fontWeight: 700 }}>{children}</th>
+                          ),
+                          td: ({ children }) => (
+                            <td style={{ borderBottom: "1px solid #e8e0d0", padding: "4px 8px" }}>{children}</td>
+                          ),
+                          p: ({ children }) => (
+                            <p style={{ marginBottom: "0.5em" }}>{children}</p>
+                          ),
+                          ul: ({ children }) => (
+                            <ul style={{ paddingLeft: "1.2em", marginBottom: "0.5em", listStyleType: "disc" }}>{children}</ul>
+                          ),
+                          ol: ({ children }) => (
+                            <ol style={{ paddingLeft: "1.2em", marginBottom: "0.5em", listStyleType: "decimal" }}>{children}</ol>
+                          ),
+                        }}
+                      >
+                        {msg.text}
+                      </ReactMarkdown>
+                      {loading && i === messages.length - 1 && (
+                        <span className="animate-pulse">▌</span>
+                      )}
+                    </div>
+                  )}
+                  {!msg.text && loading && i === messages.length - 1 && (
+                    <span className="text-sm animate-pulse" style={{ color: "#888" }}>
+                      Réflexion en cours...
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Input */}
+      <div className="flex gap-3">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && sendQuestion()}
+          placeholder="Ex : Comment a voté le RN sur la réforme des retraites ?"
+          disabled={loading}
+          className="flex-1 px-4 py-3 text-sm rounded-sm"
+          style={{
+            border: "1px solid #d4c9b0",
+            background: loading ? "#f5f0e8" : "#faf7f2",
+            fontFamily: "Arial, sans-serif",
+            outline: "none",
+            opacity: loading ? 0.7 : 1,
+          }}
+        />
+        <button
+          onClick={sendQuestion}
+          disabled={loading || !input.trim()}
+          className="px-5 py-3 text-sm font-bold rounded-sm"
+          style={{
+            background: "#1a1a1a",
+            color: "#f5f0e8",
+            fontFamily: "Arial, sans-serif",
+            opacity: loading || !input.trim() ? 0.4 : 1,
+            cursor: loading || !input.trim() ? "not-allowed" : "pointer",
+          }}
+        >
+          {loading ? "..." : "Envoyer"}
+        </button>
+      </div>
+      <p className="text-xs mt-2" style={{ color: "#999", fontFamily: "Arial, sans-serif" }}>
+        Limité à 5 questions par jour · Données : 16e législature uniquement
+      </p>
+    </div>
+  );
+}
