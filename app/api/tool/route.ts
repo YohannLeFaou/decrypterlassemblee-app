@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     const { stdout, stderr } = await execFileAsync(
       UV_BIN,
       ["run", "python", "-c", PYTHON_SCRIPT, name, JSON.stringify(input)],
-      { cwd: MCP_DIR, timeout: 20000 }
+      { cwd: MCP_DIR, timeout: 45000 }
     );
 
     if (stderr) {

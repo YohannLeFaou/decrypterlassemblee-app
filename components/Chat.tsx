@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type ToolCall = { name: string; done: boolean };
 
@@ -16,6 +17,17 @@ const SUGGESTED_QUESTIONS = [
   "Quels groupes siègent à l'Assemblée nationale ?",
   "Qui a le plus voté pour en 2023 ?",
 ];
+
+// Haiku sometimes emits a Markdown table as a single line — split it back into rows.
+function normalizeMarkdown(text: string): string {
+  return text.replace(/(\|[^\n]+\|)(\s*\|[-| :]+\|)(\s*(?:\|[^\n]+\|)+)/g, (match) => {
+    // Detect inline table: pipe-separated segments without newlines between rows
+    const rowPattern = /\|[^\n|](?:[^|\n]*\|)+/g;
+    const rows = match.match(rowPattern);
+    if (!rows || rows.length < 2) return match;
+    return rows.join("\n");
+  });
+}
 
 const TOOL_LABELS: Record<string, string> = {
   search_depute: "Recherche un député",
@@ -50,12 +62,26 @@ export default function Chat() {
     abortRef.current = abort;
 
     try {
+      const history = messages
+        .filter((m) => m.text)
+        .map((m) => ({ role: m.role, content: m.text }));
+
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question, history }),
         signal: abort.signal,
       });
+
+      if (res.status === 429) {
+        const { error } = await res.json();
+        setMessages((prev) => {
+          const msgs = [...prev];
+          msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], text: error };
+          return msgs;
+        });
+        return;
+      }
 
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
@@ -86,6 +112,8 @@ export default function Chat() {
               const idx = tools.findLastIndex((t) => t.name === data.name && !t.done);
               if (idx !== -1) tools[idx] = { ...tools[idx], done: true };
               last.toolCalls = tools;
+            } else if (data.type === "error") {
+              last.text = last.text || "Une erreur est survenue lors de la récupération des données. Réessayez.";
             }
 
             msgs[msgs.length - 1] = last;
@@ -127,23 +155,18 @@ export default function Chat() {
                 </div>
               ) : (
                 <div>
-                  {/* Tool calls */}
-                  {msg.toolCalls && msg.toolCalls.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {msg.toolCalls.map((t, j) => (
-                        <span
-                          key={j}
-                          className="text-xs px-2 py-1 rounded-sm"
-                          style={{
-                            background: t.done ? "#e8f0e8" : "#f5f0e8",
-                            border: `1px solid ${t.done ? "#a0c0a0" : "#d4c9b0"}`,
-                            color: t.done ? "#2d6a2d" : "#888",
-                            fontFamily: "Arial, sans-serif",
-                          }}
-                        >
-                          {t.done ? "✓" : "⋯"} {TOOL_LABELS[t.name] ?? t.name}
-                        </span>
-                      ))}
+                  {/* Indicateur de réflexion */}
+                  {msg.toolCalls && msg.toolCalls.length > 0 && i === messages.length - 1 && loading && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="animate-pulse inline-block text-sm" style={{ color: "#aaa" }}>●</span>
+                      <span className="text-xs" style={{ color: "#999", fontFamily: "Arial, sans-serif" }}>
+                        {(() => {
+                          const active = [...msg.toolCalls].reverse().find((t) => !t.done);
+                          const last = [...msg.toolCalls].reverse().find((t) => t.done);
+                          const current = active ?? last;
+                          return current ? (TOOL_LABELS[current.name] ?? current.name) + "..." : "Réflexion en cours...";
+                        })()}
+                      </span>
                     </div>
                   )}
                   {/* Réponse */}
@@ -153,6 +176,8 @@ export default function Chat() {
                       style={{ color: "#4a4a4a", fontFamily: "Georgia, serif" }}
                     >
                       <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        children={normalizeMarkdown(msg.text)}
                         components={{
                           a: ({ href, children }) => (
                             <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: "#8b1a1a", textDecoration: "underline" }}>
@@ -166,7 +191,9 @@ export default function Chat() {
                             <em style={{ fontStyle: "italic" }}>{children}</em>
                           ),
                           table: ({ children }) => (
-                            <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.85em", fontFamily: "Arial, sans-serif" }}>{children}</table>
+                            <div style={{ overflowX: "auto", width: "100%" }}>
+                              <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.8em", fontFamily: "Arial, sans-serif", whiteSpace: "nowrap" }}>{children}</table>
+                            </div>
                           ),
                           th: ({ children }) => (
                             <th style={{ borderBottom: "2px solid #d4c9b0", padding: "4px 8px", textAlign: "left", fontWeight: 700 }}>{children}</th>
@@ -192,7 +219,7 @@ export default function Chat() {
                       )}
                     </div>
                   )}
-                  {!msg.text && loading && i === messages.length - 1 && (
+                  {!msg.text && (!msg.toolCalls || msg.toolCalls.length === 0) && loading && i === messages.length - 1 && (
                     <span className="text-sm animate-pulse" style={{ color: "#888" }}>
                       Réflexion en cours...
                     </span>
@@ -260,7 +287,7 @@ export default function Chat() {
         </button>
       </div>
       <p className="text-xs mt-2" style={{ color: "#999", fontFamily: "Arial, sans-serif" }}>
-        Limité à 5 questions par jour · Données : 16e législature uniquement
+        Limité à 10 questions par jour · Données : 16e législature uniquement
       </p>
     </div>
   );
