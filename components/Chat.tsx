@@ -30,15 +30,7 @@ function normalizeMarkdown(text: string): string {
 }
 
 const TOOL_LABELS: Record<string, string> = {
-  search_depute: "Recherche un député",
-  get_depute: "Charge le profil",
-  get_votes_depute: "Charge les votes",
-  get_synthese_depute: "Charge les statistiques",
-  get_scrutin: "Charge un scrutin",
-  list_groupes: "Liste les groupes",
-  get_membres_groupe: "Liste les membres du groupe",
-  search_interventions: "Recherche des interventions",
-  suggest_slug: "Construit le slug",
+  execute_python: "Interrogation de la base",
 };
 
 export default function Chat() {
@@ -64,7 +56,7 @@ export default function Chat() {
     try {
       const history = messages
         .filter((m) => m.text)
-        .map((m) => ({ role: m.role, content: m.text }));
+        .map((m) => ({ role: m.role, text: m.text }));
 
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -177,7 +169,6 @@ export default function Chat() {
                     >
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
-                        children={normalizeMarkdown(msg.text)}
                         components={{
                           a: ({ href, children }) => (
                             <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: "#8b1a1a", textDecoration: "underline" }}>
@@ -212,7 +203,7 @@ export default function Chat() {
                           ),
                         }}
                       >
-                        {msg.text}
+                        {normalizeMarkdown(msg.text)}
                       </ReactMarkdown>
                       {loading && i === messages.length - 1 && (
                         <span className="animate-pulse">▌</span>
@@ -287,7 +278,7 @@ export default function Chat() {
         </button>
       </div>
       <p className="text-xs mt-2" style={{ color: "#999", fontFamily: "Arial, sans-serif" }}>
-        Limité à 10 questions par jour · Données : 16e législature uniquement
+        Limité à 10 questions par jour · Données : 16e et 17e législature
       </p>
     </div>
   );

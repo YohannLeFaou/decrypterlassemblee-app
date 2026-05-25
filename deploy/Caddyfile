@@ -1,0 +1,4 @@
+# Remplacer par ton domaine
+nos-deputes.example.fr {
+    reverse_proxy app:3000
+}

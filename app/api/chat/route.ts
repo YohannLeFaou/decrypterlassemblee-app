@@ -1,12 +1,11 @@
 import { NextRequest } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
-import { MCP_TOOLS, SYSTEM_PROMPT } from "@/lib/mcp-tools";
+import { getProvider } from "@/lib/llm-provider";
+import type { NeutralMessage, ToolResult } from "@/lib/llm-provider";
+import { MCP_TOOLS, SYSTEM_PROMPT } from "@/lib/tools";
+import { executePython } from "@/lib/sandbox";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
 const MAX_TOOL_ROUNDS = 12;
-const MAX_PARALLEL_TOOLS = 3;
 
 export async function POST(req: NextRequest) {
   const { question, history } = await req.json();
@@ -25,7 +24,9 @@ export async function POST(req: NextRequest) {
   }
   console.log(`[chat] ip=${ip} remaining=${remaining}`);
 
+  const provider = getProvider();
   const encoder = new TextEncoder();
+
   const stream = new ReadableStream({
     async start(controller) {
       const send = (data: object) => {
@@ -33,71 +34,44 @@ export async function POST(req: NextRequest) {
       };
 
       try {
-        const messages: Anthropic.MessageParam[] = [
+        const messages: NeutralMessage[] = [
           ...(history ?? []),
-          { role: "user", content: question },
+          { role: "user", text: question },
         ];
 
         for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-          console.log(`[chat] round ${round} — calling Anthropic`);
-          const response = await anthropic.messages.create({
-            model: "claude-haiku-4-5-20251001",
-            max_tokens: 4096,
-            system: SYSTEM_PROMPT,
-            tools: MCP_TOOLS,
-            messages,
+          console.log(`[chat] round ${round} — calling ${process.env.LLM_PROVIDER ?? "anthropic"}`);
+          const response = await provider.chat(messages, MCP_TOOLS, SYSTEM_PROMPT);
+          console.log(`[chat] round ${round} — stop_reason=${response.stopReason} tool_calls=${response.toolCalls.length}`);
+
+          if (response.text) {
+            const prefix = round > 0 ? "\n\n" : "";
+            send({ type: "text", text: prefix + response.text });
+          }
+          for (const tc of response.toolCalls) {
+            send({ type: "tool_call", name: tc.name });
+          }
+
+          if (response.stopReason !== "tool_use" || response.toolCalls.length === 0) break;
+
+          messages.push({
+            role: "assistant",
+            text: response.text,
+            toolCalls: response.toolCalls,
+            ...(response.reasoning_content ? { reasoning_content: response.reasoning_content } : {}),
           });
-          console.log(`[chat] round ${round} — stop_reason=${response.stop_reason} blocks=${response.content.length}`);
 
-          // Stream text blocks as they arrive
-          for (const block of response.content) {
-            if (block.type === "text" && block.text) {
-              const prefix = round > 0 ? "\n\n" : "";
-              send({ type: "text", text: prefix + block.text });
-            }
-            if (block.type === "tool_use") {
-              send({ type: "tool_call", name: block.name });
-            }
+          const toolResults: ToolResult[] = [];
+          for (const tc of response.toolCalls) {
+            console.log(`[chat] execute_python start`);
+            const code = tc.input.code as string;
+            const result = await executePython(code);
+            console.log(`[chat] execute_python done stdout_len=${result.stdout.length} error=${result.error ?? "none"}`);
+            send({ type: "tool_result", name: tc.name });
+            toolResults.push({ id: tc.id, content: JSON.stringify(result) });
           }
 
-          // If no tool calls, we're done
-          if (response.stop_reason !== "tool_use") break;
-
-          // Execute tool calls
-          const toolUseBlocks = response.content.filter(
-            (b): b is Anthropic.ToolUseBlock => b.type === "tool_use"
-          );
-          console.log(`[chat] round ${round} — executing ${toolUseBlocks.length} tools: ${toolUseBlocks.map(b => b.name).join(", ")}`);
-
-          const toolResults: Anthropic.ToolResultBlockParam[] = [];
-          for (let i = 0; i < toolUseBlocks.length; i += MAX_PARALLEL_TOOLS) {
-            const batch = toolUseBlocks.slice(i, i + MAX_PARALLEL_TOOLS);
-            const batchResults = await Promise.all(
-              batch.map(async (block) => {
-                console.log(`[chat] tool start: ${block.name}`, block.input);
-                const toolRes = await fetch(
-                  new URL("/api/tool", req.url).toString(),
-                  {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name: block.name, input: block.input }),
-                  }
-                );
-                console.log(`[chat] tool done: ${block.name} status=${toolRes.status}`);
-                const content = await toolRes.text();
-                send({ type: "tool_result", name: block.name });
-                return {
-                  type: "tool_result" as const,
-                  tool_use_id: block.id,
-                  content,
-                };
-              })
-            );
-            toolResults.push(...batchResults);
-          }
-
-          messages.push({ role: "assistant", content: response.content });
-          messages.push({ role: "user", content: toolResults });
+          messages.push({ role: "tool_result", toolResults });
         }
 
         console.log(`[chat] done`);

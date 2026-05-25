@@ -1,0 +1,76 @@
+services:
+  app:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    environment:
+      - LLM_PROVIDER=${LLM_PROVIDER:-deepseek}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - DEEPSEEK_MODEL=${DEEPSEEK_MODEL:-deepseek-v4-flash}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY:-}
+      - MISTRAL_MODEL=${MISTRAL_MODEL:-}
+      - SANDBOX_URL=http://sandbox:5000
+    networks:
+      - frontend
+      - sandbox_net
+    depends_on:
+      sandbox:
+        condition: service_healthy
+    restart: unless-stopped
+
+  sandbox:
+    build:
+      context: ../sandbox
+    volumes:
+      - ./data/an.db:/data/an.db:ro
+    networks:
+      - sandbox_net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "1"
+    restart: unless-stopped
+
+  etl:
+    build:
+      context: ../../nos-deputes-data
+      dockerfile: ../nos-deputes-app/deploy/etl/Dockerfile
+    volumes:
+      - ./data:/data
+    profiles:
+      - etl
+    restart: "no"
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - frontend
+    depends_on:
+      - app
+    restart: unless-stopped
+
+networks:
+  frontend:
+  sandbox_net:
+    internal: true
+
+volumes:
+  caddy_data:
+  caddy_config:
