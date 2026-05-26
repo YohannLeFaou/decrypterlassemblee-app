@@ -12,6 +12,7 @@ services:
       - MISTRAL_API_KEY=${MISTRAL_API_KEY:-}
       - MISTRAL_MODEL=${MISTRAL_MODEL:-}
       - SANDBOX_URL=http://sandbox:5000
+      - HOSTNAME=0.0.0.0
     networks:
       - frontend
       - sandbox_net

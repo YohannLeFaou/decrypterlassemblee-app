@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Décrypter l'Assemblée",
-  description: "Explorez les votes, les débats et les positions des députés français de la 16e législature.",
+  description: "Explorez les votes et les positions des députés français à l'Assemblée nationale (16e et 17e législature).",
   icons: { icon: "/bourbon.svg" },
 };
 

@@ -1,4 +1,3 @@
-# Remplacer par ton domaine
-nos-deputes.example.fr {
+decrypterlassemblee.fr {
     reverse_proxy app:3000
 }

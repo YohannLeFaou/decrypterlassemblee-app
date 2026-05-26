@@ -13,7 +13,7 @@ export default function Home() {
               Décrypter l&apos;Assemblée
             </h1>
             <p className="text-sm mt-0.5" style={{ color: "#666", fontFamily: "Arial, sans-serif" }}>
-              16e législature · juin 2022 – juin 2024
+              16e et 17e législature · 2022 – aujourd&apos;hui
             </p>
           </div>
           <nav className="flex gap-4 text-sm" style={{ fontFamily: "Arial, sans-serif" }}>
@@ -40,7 +40,7 @@ export default function Home() {
         className="text-center text-xs py-2 px-4"
         style={{ background: "#4a4a4a", color: "#e0d8c8", fontFamily: "Arial, sans-serif" }}
       >
-        ⚠️ Données limitées à la 16e législature (juin 2022 – juin 2024). La 17e législature n&apos;est pas encore indexée.
+        Données : 16e législature (juin 2022 – juin 2024) et 17e législature (octobre 2024 – aujourd&apos;hui), mises à jour quotidiennement.
       </div>
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
@@ -115,8 +115,7 @@ export default function Home() {
         className="text-xs text-center py-6 px-4 mt-8"
         style={{ borderTop: "1px solid #d4c9b0", color: "#999", fontFamily: "Arial, sans-serif" }}
       >
-        Données : <a href="https://www.nosdeputes.fr" className="underline">NosDéputés.fr</a> (Regards Citoyens) · CC-BY-SA / ODbL ·{" "}
-        <a href="https://github.com/YohannLeFaou/nos-deputes-mcp" className="underline">MCP open-source</a>
+        Données : <a href="https://data.assemblee-nationale.fr" className="underline">Assemblée nationale open data</a> · Licence Ouverte v2.0
       </footer>
     </div>
   );
