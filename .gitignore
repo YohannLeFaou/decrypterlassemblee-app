@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# notes locales
+comparaison_investigations.md
+cloud_comparison.md
