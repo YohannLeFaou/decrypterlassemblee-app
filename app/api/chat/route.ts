@@ -22,7 +22,8 @@ export async function POST(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
     });
   }
-  console.log(`[chat] ip=${ip} remaining=${remaining}`);
+  const isFollowUp = Array.isArray(history) && history.length > 0;
+  console.log(`[chat] ip=${ip} remaining=${remaining} follow_up=${isFollowUp} question=${JSON.stringify(question.slice(0, 200))}`);
 
   const provider = getProvider();
   const encoder = new TextEncoder();

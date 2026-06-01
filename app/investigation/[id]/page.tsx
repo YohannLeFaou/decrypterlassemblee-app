@@ -23,6 +23,22 @@ function getPositionColor(position: string): string {
   return "#555";
 }
 
+const groupeNoms: Record<string, string> = {
+  EPR: "Ensemble pour la République",
+  RN: "Rassemblement National",
+  "LFI-NFP": "La France insoumise - NFP",
+  DR: "Droite Républicaine",
+  SOC: "Socialistes et apparentés",
+  DEM: "Les Démocrates (MoDem)",
+  HOR: "Horizons & Indépendants",
+  ECOS: "Écologiste et Social",
+  GDR: "Gauche Démocrate et Républicaine",
+  LIOT: "Libertés, Indépendants, Outre-mer et Territoires",
+  UDDPLR: "Union des droites pour la République",
+  UDR: "UDR",
+  NI: "Non inscrits",
+};
+
 export default async function InvestigationPage({
   params,
 }: {
@@ -31,6 +47,15 @@ export default async function InvestigationPage({
   const { id } = await params;
   const investigation = getInvestigation(id);
   if (!investigation) notFound();
+
+  const seenSigles = new Set<string>();
+  function renderSigle(sigle: string): string {
+    if (!seenSigles.has(sigle) && groupeNoms[sigle]) {
+      seenSigles.add(sigle);
+      return `${sigle} (${groupeNoms[sigle]})`;
+    }
+    return sigle;
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -144,7 +169,7 @@ export default async function InvestigationPage({
                             color: getPositionColor(g.position),
                           }}
                         >
-                          <strong>{g.sigle}</strong> · {g.position}
+                          <strong>{renderSigle(g.sigle)}</strong> · {g.position}
                         </span>
                       ))}
                     </div>
@@ -166,14 +191,14 @@ export default async function InvestigationPage({
                       <div className="flex flex-col gap-1">
                         {scrutin.dissidences.map((d, i) => (
                           <span key={i} className="text-xs" style={{ color: "#666", fontFamily: "Arial, sans-serif" }}>
-                            <strong>{d.groupe}</strong> · {d.depute}{d.note ? ` — ${d.note}` : ""}
+                            <strong>{renderSigle(d.groupe)}</strong> · {d.depute}{d.note ? ` — ${d.note}` : ""}
                           </span>
                         ))}
                       </div>
                     </div>
                   )}
 
-                  {/* Lien NosDéputés */}
+                  {/* Lien Assemblée nationale */}
                   <a
                     href={scrutin.url}
                     target="_blank"
@@ -181,7 +206,7 @@ export default async function InvestigationPage({
                     className="text-xs mt-4 inline-block hover:underline"
                     style={{ color: "#999", fontFamily: "Arial, sans-serif" }}
                   >
-                    Voir sur NosDéputés.fr →
+                    Voir sur Assemblée-nationale.fr →
                   </a>
                 </div>
               ))}
