@@ -23,6 +23,18 @@ export default function Home() {
               Investigations
             </a>
             <a
+              href="/faq"
+              style={{ padding: "7px 16px", fontSize: "0.78rem", fontWeight: 600, textDecoration: "none", borderRadius: 2, color: "#555", letterSpacing: "0.03em" }}
+            >
+              FAQ
+            </a>
+            <a
+              href="/contact"
+              style={{ padding: "7px 16px", fontSize: "0.78rem", fontWeight: 600, textDecoration: "none", borderRadius: 2, color: "#555", letterSpacing: "0.03em" }}
+            >
+              Contact
+            </a>
+            <a
               href="#chat"
               style={{ padding: "7px 16px", fontSize: "0.78rem", fontWeight: 800, textDecoration: "none", borderRadius: 2, background: "#1a3a5c", color: "#fff", letterSpacing: "0.03em" }}
             >
@@ -133,7 +145,7 @@ export default function Home() {
       {/* Footer */}
       <footer style={{ borderTop: "1px solid #e0e0e0", padding: "24px 40px", color: "#bbb", fontSize: "0.72rem", marginTop: 64, display: "flex", justifyContent: "space-between", maxWidth: 1120, margin: "64px auto 0", width: "100%" }}>
         <span>Données : <a href="https://data.assemblee-nationale.fr" style={{ color: "#999" }}>Assemblée nationale open data</a> · Licence Ouverte v2.0</span>
-        <span><a href="https://github.com/YohannLeFaou/nos-deputes-mcp" style={{ color: "#999" }}>GitHub</a></span>
+        <span><a href="/faq" style={{ color: "#999" }}>FAQ</a> · <a href="/contact" style={{ color: "#999" }}>Contact</a> · <a href="/mentions-legales" style={{ color: "#999" }}>Mentions légales</a></span>
       </footer>
     </div>
   );

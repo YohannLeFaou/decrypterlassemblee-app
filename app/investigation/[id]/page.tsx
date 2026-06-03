@@ -70,9 +70,20 @@ export default async function InvestigationPage({
               16e &amp; 17e législature · 2022–aujourd&apos;hui
             </div>
           </a>
-          <a href="/" style={{ fontSize: "0.78rem", fontWeight: 600, textDecoration: "none", color: "#555", letterSpacing: "0.03em" }}>
-            ← Toutes les investigations
-          </a>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <a href="/faq" style={{ fontSize: "0.78rem", fontWeight: 600, textDecoration: "none", color: "#555", letterSpacing: "0.03em" }}>
+              FAQ
+            </a>
+            <a href="/faq" style={{ fontSize: "0.78rem", fontWeight: 600, textDecoration: "none", color: "#555", letterSpacing: "0.03em" }}>
+              FAQ
+            </a>
+            <a href="/contact" style={{ fontSize: "0.78rem", fontWeight: 600, textDecoration: "none", color: "#555", letterSpacing: "0.03em" }}>
+              Contact
+            </a>
+            <a href="/" style={{ fontSize: "0.78rem", fontWeight: 600, textDecoration: "none", color: "#555", letterSpacing: "0.03em" }}>
+              ← Toutes les investigations
+            </a>
+          </div>
         </div>
       </header>
 
@@ -240,7 +251,8 @@ export default async function InvestigationPage({
 
       {/* Footer */}
       <footer style={{ borderTop: "1px solid #e0e0e0", padding: "24px 40px", color: "#bbb", fontSize: "0.72rem", marginTop: 64, display: "flex", justifyContent: "space-between", maxWidth: 1120, margin: "64px auto 0", width: "100%" }}>
-        <span>Données : <a href="https://www.nosdeputes.fr" style={{ color: "#999" }}>NosDéputés.fr</a> · CC-BY-SA / ODbL · <a href="https://github.com/YohannLeFaou/nos-deputes-mcp" style={{ color: "#999" }}>MCP open-source</a></span>
+        <span>Données : <a href="https://www.nosdeputes.fr" style={{ color: "#999" }}>NosDéputés.fr</a> · CC-BY-SA / ODbL</span>
+        <span><a href="/faq" style={{ color: "#999" }}>FAQ</a> · <a href="/contact" style={{ color: "#999" }}>Contact</a> · <a href="/mentions-legales" style={{ color: "#999" }}>Mentions légales</a></span>
       </footer>
     </div>
   );
