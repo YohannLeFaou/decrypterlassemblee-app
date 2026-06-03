@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -33,11 +33,26 @@ const TOOL_LABELS: Record<string, string> = {
   execute_python: "Interrogation de la base",
 };
 
+const SESSION_KEY = "chat_messages";
+
 export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
+
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(SESSION_KEY);
+      if (saved) setMessages(JSON.parse(saved));
+    } catch {}
+  }, []);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(messages));
+    } catch {}
+  }, [messages]);
 
   async function sendQuestion() {
     const question = input.trim();
