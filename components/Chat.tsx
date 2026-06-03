@@ -246,20 +246,30 @@ export default function Chat() {
 
       {/* Input */}
       <div className="flex gap-3">
-        <input
-          type="text"
+        <textarea
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendQuestion()}
+          onChange={(e) => {
+            setInput(e.target.value);
+            e.target.style.height = "auto";
+            e.target.style.height = e.target.scrollHeight + "px";
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              sendQuestion();
+            }
+          }}
           placeholder="Ex : Combien y a-t-il de groupes différents à l'Assemblée ?"
           disabled={loading}
-          className="flex-1 px-4 py-3 text-sm rounded-sm"
+          rows={1}
+          className="flex-1 px-4 py-3 text-sm rounded-sm resize-none overflow-hidden"
           style={{
             border: "1px solid #d4c9b0",
             background: loading ? "#f5f0e8" : "#faf7f2",
             fontFamily: "Arial, sans-serif",
             outline: "none",
             opacity: loading ? 0.7 : 1,
+            lineHeight: "1.5",
           }}
         />
         <button
