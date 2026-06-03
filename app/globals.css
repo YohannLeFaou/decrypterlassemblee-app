@@ -1,16 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f5f0e8;
+  --bg: #fafaf8;
   --bg-card: #ffffff;
-  --text: #4a4a4a;
+  --bg-subtle: #f5f6f8;
+  --text: #111111;
   --text-muted: #666666;
-  --accent: #8b1a1a;
-  --border: #d4c9b0;
+  --accent: #1a3a5c;
+  --accent-dark: #142d47;
+  --red: #c1121f;
+  --border: #e0e0e0;
+  --border-subtle: #ebebeb;
+}
+
+html {
+  font-size: 18px;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: Arial, sans-serif;
 }

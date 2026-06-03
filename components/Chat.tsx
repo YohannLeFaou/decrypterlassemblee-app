@@ -21,7 +21,6 @@ const SUGGESTED_QUESTIONS = [
 // Haiku sometimes emits a Markdown table as a single line — split it back into rows.
 function normalizeMarkdown(text: string): string {
   return text.replace(/(\|[^\n]+\|)(\s*\|[-| :]+\|)(\s*(?:\|[^\n]+\|)+)/g, (match) => {
-    // Detect inline table: pipe-separated segments without newlines between rows
     const rowPattern = /\|[^\n|](?:[^|\n]*\|)+/g;
     const rows = match.match(rowPattern);
     if (!rows || rows.length < 2) return match;
@@ -146,27 +145,31 @@ export default function Chat() {
 
   return (
     <div>
+      {/* Intro */}
+      {messages.length === 0 && (
+        <p style={{ fontSize: "0.85rem", color: "#666", marginBottom: 20, lineHeight: 1.6 }}>
+          Interrogez directement la base de données des scrutins. L&apos;IA écrit et exécute les requêtes pour vous, et formule une réponse compréhensible.
+        </p>
+      )}
+
       {/* Historique */}
       {messages.length > 0 && (
-        <div className="mb-6 flex flex-col gap-4">
+        <div style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 16 }}>
           {messages.map((msg, i) => (
             <div key={i}>
               {msg.role === "user" ? (
-                <div className="flex justify-end">
-                  <div
-                    className="px-4 py-3 rounded-sm max-w-lg text-sm"
-                    style={{ background: "#4a4a4a", color: "#f5f0e8", fontFamily: "Arial, sans-serif" }}
-                  >
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <div style={{ padding: "10px 16px", borderRadius: 2, maxWidth: 520, fontSize: "0.85rem", background: "#1a3a5c", color: "#fff" }}>
                     {msg.text}
                   </div>
                 </div>
               ) : (
                 <div>
-                  {/* Indicateur de réflexion */}
+                  {/* Indicateur outil */}
                   {msg.toolCalls && msg.toolCalls.length > 0 && i === messages.length - 1 && loading && (
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="animate-pulse inline-block text-sm" style={{ color: "#aaa" }}>●</span>
-                      <span className="text-xs" style={{ color: "#999", fontFamily: "Arial, sans-serif" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                      <span className="animate-pulse" style={{ color: "#bbb", fontSize: "0.8rem" }}>●</span>
+                      <span style={{ fontSize: "0.75rem", color: "#aaa" }}>
                         {(() => {
                           const active = [...msg.toolCalls].reverse().find((t) => !t.done);
                           const last = [...msg.toolCalls].reverse().find((t) => t.done);
@@ -179,33 +182,33 @@ export default function Chat() {
                   {/* Réponse */}
                   {msg.text && (
                     <div
-                      className="text-sm leading-relaxed prose prose-sm max-w-none"
-                      style={{ color: "#4a4a4a", fontFamily: "Georgia, serif" }}
+                      className="prose prose-sm max-w-none"
+                      style={{ fontSize: "0.85rem", lineHeight: 1.65, color: "#111" }}
                     >
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={{
                           a: ({ href, children }) => (
-                            <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: "#8b1a1a", textDecoration: "underline" }}>
+                            <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: "#1a3a5c", textDecoration: "underline" }}>
                               {children}
                             </a>
                           ),
                           strong: ({ children }) => (
-                            <strong style={{ fontWeight: 700, color: "#4a4a4a" }}>{children}</strong>
+                            <strong style={{ fontWeight: 700, color: "#111" }}>{children}</strong>
                           ),
                           em: ({ children }) => (
                             <em style={{ fontStyle: "italic" }}>{children}</em>
                           ),
                           table: ({ children }) => (
                             <div style={{ overflowX: "auto", width: "100%" }}>
-                              <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.8em", fontFamily: "Arial, sans-serif", whiteSpace: "nowrap" }}>{children}</table>
+                              <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.8em", whiteSpace: "nowrap" }}>{children}</table>
                             </div>
                           ),
                           th: ({ children }) => (
-                            <th style={{ borderBottom: "2px solid #d4c9b0", padding: "4px 8px", textAlign: "left", fontWeight: 700 }}>{children}</th>
+                            <th style={{ borderBottom: "2px solid #e0e0e0", padding: "4px 8px", textAlign: "left", fontWeight: 700 }}>{children}</th>
                           ),
                           td: ({ children }) => (
-                            <td style={{ borderBottom: "1px solid #e8e0d0", padding: "4px 8px" }}>{children}</td>
+                            <td style={{ borderBottom: "1px solid #ebebeb", padding: "4px 8px" }}>{children}</td>
                           ),
                           p: ({ children }) => (
                             <p style={{ marginBottom: "0.5em" }}>{children}</p>
@@ -226,7 +229,7 @@ export default function Chat() {
                     </div>
                   )}
                   {!msg.text && (!msg.toolCalls || msg.toolCalls.length === 0) && loading && i === messages.length - 1 && (
-                    <span className="text-sm animate-pulse" style={{ color: "#888" }}>
+                    <span style={{ fontSize: "0.85rem", color: "#aaa" }} className="animate-pulse">
                       Réflexion en cours...
                     </span>
                   )}
@@ -239,17 +242,14 @@ export default function Chat() {
 
       {/* Questions suggérées */}
       {messages.length === 0 && (
-        <div className="flex flex-wrap gap-2 mb-3">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
           {SUGGESTED_QUESTIONS.map((q) => (
             <button
               key={q}
-              onClick={() => { setInput(q); }}
-              className="text-xs px-3 py-2 rounded-sm hover:opacity-80 transition-opacity"
+              onClick={() => setInput(q)}
               style={{
-                border: "1px solid #e0dbd0",
-                background: "#eeebe4",
-                color: "#777",
-                fontFamily: "Arial, sans-serif",
+                fontSize: "0.73rem", padding: "7px 14px", borderRadius: 2,
+                border: "1px solid #cdd4e0", background: "#fff", color: "#555",
                 cursor: "pointer",
               }}
             >
@@ -260,7 +260,7 @@ export default function Chat() {
       )}
 
       {/* Input */}
-      <div className="flex gap-3">
+      <div style={{ display: "flex", gap: 8 }}>
         <textarea
           value={input}
           onChange={(e) => {
@@ -277,32 +277,29 @@ export default function Chat() {
           placeholder="Ex : Combien y a-t-il de groupes différents à l'Assemblée ?"
           disabled={loading}
           rows={1}
-          className="flex-1 px-4 py-3 text-sm rounded-sm resize-none overflow-hidden"
           style={{
-            border: "1px solid #d4c9b0",
-            background: loading ? "#f5f0e8" : "#faf7f2",
-            fontFamily: "Arial, sans-serif",
-            outline: "none",
-            opacity: loading ? 0.7 : 1,
-            lineHeight: "1.5",
+            flex: 1, padding: "14px 18px", fontSize: "0.85rem",
+            border: "1.5px solid #cdd4e0", borderRadius: 2,
+            background: loading ? "#f0f0f0" : "#fff",
+            resize: "none", outline: "none", lineHeight: 1.5,
+            color: "#111", opacity: loading ? 0.7 : 1,
           }}
         />
         <button
           onClick={sendQuestion}
           disabled={loading || !input.trim()}
-          className="px-5 py-3 text-sm font-bold rounded-sm"
           style={{
-            background: "#4a4a4a",
-            color: "#f5f0e8",
-            fontFamily: "Arial, sans-serif",
-            opacity: loading || !input.trim() ? 0.4 : 1,
+            padding: "14px 28px", fontSize: "0.82rem", fontWeight: 800,
+            border: "none", borderRadius: 2, background: "#1a3a5c", color: "#fff",
             cursor: loading || !input.trim() ? "not-allowed" : "pointer",
+            letterSpacing: "0.04em", textTransform: "uppercase",
+            opacity: loading || !input.trim() ? 0.4 : 1,
           }}
         >
           {loading ? "..." : "Envoyer"}
         </button>
       </div>
-      <p className="text-xs mt-2" style={{ color: "#999", fontFamily: "Arial, sans-serif" }}>
+      <p style={{ fontSize: "0.68rem", color: "#bbb", marginTop: 8 }}>
         Limité à 10 questions par jour · Données : 16e et 17e législature
       </p>
     </div>

@@ -5,14 +5,14 @@ export function generateStaticParams() {
   return investigations.map((inv) => ({ id: inv.id }));
 }
 
-const sortLabel: Record<string, { label: string; color: string }> = {
-  "adopté": { label: "Adopté ✓", color: "#2d6a2d" },
-  "rejeté": { label: "Rejeté ✗", color: "#8b1a1a" },
+const sortLabel: Record<string, { label: string; color: string; bg: string }> = {
+  "adopté": { label: "Adopté ✓", color: "#2a6a2a", bg: "#eaf3ea" },
+  "rejeté": { label: "Rejeté ✗", color: "#c1121f", bg: "#fdf0f0" },
 };
 
 const positionColor: Record<string, string> = {
-  "Pour": "#2d6a2d",
-  "Contre": "#8b1a1a",
+  "Pour": "#2a6a2a",
+  "Contre": "#c1121f",
   "Divisé": "#888",
 };
 
@@ -58,198 +58,165 @@ export default async function InvestigationPage({
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen" style={{ background: "#fafaf8" }}>
       {/* Header */}
-      <header style={{ borderBottom: "2px solid #4a4a4a" }} className="bg-[#f5f0e8] px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-baseline justify-between">
+      <header style={{ background: "#fff", borderBottom: "1px solid #e0e0e0", padding: "0 40px", position: "sticky", top: 0, zIndex: 10 }}>
+        <div style={{ maxWidth: 1120, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
           <a href="/" style={{ textDecoration: "none" }}>
-            <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "Georgia, serif", color: "#4a4a4a" }}>
+            <div style={{ fontSize: "1.05rem", fontWeight: 800, letterSpacing: "-0.01em", color: "#111" }}>
               Décrypter l&apos;Assemblée
-            </h1>
+            </div>
+            <div style={{ fontSize: "0.62rem", color: "#aaa", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 2 }}>
+              16e &amp; 17e législature · 2022–aujourd&apos;hui
+            </div>
           </a>
-          <a href="/" className="text-sm hover:underline" style={{ fontFamily: "Arial, sans-serif", color: "#666" }}>
+          <a href="/" style={{ fontSize: "0.78rem", fontWeight: 600, textDecoration: "none", color: "#555", letterSpacing: "0.03em" }}>
             ← Toutes les investigations
           </a>
         </div>
       </header>
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-10">
+      {/* Bandeau données */}
+      <div style={{ background: "#f7f7f7", borderBottom: "1px solid #e8e8e8", fontSize: "0.68rem", textAlign: "center", padding: "6px 16px", color: "#999", letterSpacing: "0.04em" }}>
+        Données mises à jour quotidiennement · 16e et 17e législature · Assemblée nationale open data
+      </div>
+
+      <main style={{ maxWidth: 1120, margin: "0 auto", padding: "64px 40px", width: "100%" }}>
 
         {/* En-tête investigation */}
-        <div className="mb-10">
-          <span
-            className="text-xs font-bold uppercase tracking-wide"
-            style={{ color: "#8b1a1a", fontFamily: "Arial, sans-serif" }}
-          >
+        <div style={{ marginBottom: 64 }}>
+          <span style={{ fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.16em", color: "#1a3a5c" }}>
             {investigation.tag}
           </span>
-          <h2
-            className="text-3xl font-bold mt-2 mb-4 leading-tight"
-            style={{ fontFamily: "Georgia, serif", color: "#4a4a4a" }}
-          >
+          <h1 style={{ fontSize: "2.6rem", fontWeight: 900, marginTop: 10, marginBottom: 20, lineHeight: 1.1, letterSpacing: "-0.03em", color: "#111", maxWidth: 760 }}>
             {investigation.title}
-          </h2>
-          <p
-            className="text-base leading-relaxed max-w-2xl"
-            style={{ color: "#555", fontFamily: "Georgia, serif" }}
-          >
+          </h1>
+          <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "#555", maxWidth: 640 }}>
             {investigation.intro}
           </p>
         </div>
 
         {/* Scrutins */}
         {investigation.scrutins.length > 0 && (
-          <section className="mb-12">
-            <h3
-              className="text-xs font-bold uppercase tracking-widest mb-6 pb-2"
-              style={{ borderBottom: "1px solid #d4c9b0", color: "#888", fontFamily: "Arial, sans-serif" }}
-            >
+          <section style={{ marginBottom: 64 }}>
+            <div style={{ fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "#bbb", marginBottom: 24, borderTop: "2px solid #111", paddingTop: 20 }}>
               Les scrutins analysés
-            </h3>
+            </div>
 
-            <div className="flex flex-col gap-8">
-              {investigation.scrutins.map((scrutin) => (
-                <div
-                  key={scrutin.numero}
-                  className="p-6 rounded-sm"
-                  style={{ background: "#fff", border: "1px solid #d4c9b0" }}
-                >
-                  {/* Titre scrutin */}
-                  <div className="flex items-start justify-between gap-4 mb-4">
-                    <div>
-                      <span className="text-xs" style={{ color: "#999", fontFamily: "Arial, sans-serif" }}>
-                        Scrutin {scrutin.numero} · {new Date(scrutin.date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
-                      </span>
-                      <h4
-                        className="text-lg font-bold mt-1 leading-snug"
-                        style={{ fontFamily: "Georgia, serif", color: "#4a4a4a" }}
-                      >
-                        {scrutin.titre}
-                      </h4>
-                    </div>
-                    <span
-                      className="text-xs font-bold px-3 py-1 rounded-sm whitespace-nowrap"
-                      style={{
-                        background: sortLabel[scrutin.sort]?.color + "18",
-                        color: sortLabel[scrutin.sort]?.color,
-                        border: `1px solid ${sortLabel[scrutin.sort]?.color}40`,
-                        fontFamily: "Arial, sans-serif",
-                      }}
-                    >
-                      {sortLabel[scrutin.sort]?.label}
-                    </span>
-                  </div>
-
-                  {/* Comptages */}
-                  {scrutin.votes_total && (
-                    <div className="flex gap-6 mb-4">
-                      <span className="text-sm" style={{ color: "#2d6a2d", fontFamily: "Arial, sans-serif" }}>
-                        <strong>{scrutin.votes_pour}</strong> pour
-                      </span>
-                      <span className="text-sm" style={{ color: "#8b1a1a", fontFamily: "Arial, sans-serif" }}>
-                        <strong>{scrutin.votes_contre}</strong> contre
-                      </span>
-                      <span className="text-sm" style={{ color: "#888", fontFamily: "Arial, sans-serif" }}>
-                        {scrutin.votes_total} votants
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Positions des groupes */}
-                  {scrutin.groupes && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {scrutin.groupes.map((g) => (
-                        <span
-                          key={g.sigle}
-                          className="text-xs px-2 py-1 rounded-sm"
-                          style={{
-                            background: "#f5f0e8",
-                            border: "1px solid #d4c9b0",
-                            fontFamily: "Arial, sans-serif",
-                            color: getPositionColor(g.position),
-                          }}
-                        >
-                          <strong>{renderSigle(g.sigle)}</strong> · {g.position}
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {investigation.scrutins.map((scrutin) => {
+                const sort = sortLabel[scrutin.sort];
+                return (
+                  <div
+                    key={scrutin.numero}
+                    style={{ background: "#fff", border: "1px solid #e0e0e0", borderLeft: "3px solid #1a3a5c", padding: 28, borderRadius: "0 2px 2px 0" }}
+                  >
+                    {/* Titre + badge */}
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 16 }}>
+                      <div>
+                        <div style={{ fontSize: "0.68rem", color: "#aaa", marginBottom: 4 }}>
+                          Scrutin {scrutin.numero} · {new Date(scrutin.date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                        </div>
+                        <h3 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#111", lineHeight: 1.3, letterSpacing: "-0.01em" }}>
+                          {scrutin.titre}
+                        </h3>
+                      </div>
+                      {sort && (
+                        <span style={{ fontSize: "0.65rem", fontWeight: 700, padding: "3px 10px", borderRadius: 2, whiteSpace: "nowrap", background: sort.bg, color: sort.color, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                          {sort.label}
                         </span>
-                      ))}
+                      )}
                     </div>
-                  )}
 
-                  {/* Analyse */}
-                  {scrutin.analyse && (
-                    <p className="text-sm leading-relaxed mb-4" style={{ color: "#555", fontFamily: "Georgia, serif" }}>
-                      {scrutin.analyse}
-                    </p>
-                  )}
+                    {/* Comptages */}
+                    {scrutin.votes_total && (
+                      <div style={{ display: "flex", gap: 20, marginBottom: 16 }}>
+                        <span style={{ fontSize: "0.82rem", color: "#2a6a2a" }}>
+                          <strong>{scrutin.votes_pour}</strong> pour
+                        </span>
+                        <span style={{ fontSize: "0.82rem", color: "#c1121f" }}>
+                          <strong>{scrutin.votes_contre}</strong> contre
+                        </span>
+                        <span style={{ fontSize: "0.82rem", color: "#888" }}>
+                          {scrutin.votes_total} votants
+                        </span>
+                      </div>
+                    )}
 
-                  {/* Dissidences */}
-                  {scrutin.dissidences && scrutin.dissidences.length > 0 && (
-                    <div className="mt-3 pt-3" style={{ borderTop: "1px solid #e8e0d0" }}>
-                      <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#888", fontFamily: "Arial, sans-serif" }}>
-                        Dissidences notables
-                      </p>
-                      <div className="flex flex-col gap-1">
-                        {scrutin.dissidences.map((d, i) => (
-                          <span key={i} className="text-xs" style={{ color: "#666", fontFamily: "Arial, sans-serif" }}>
-                            <strong>{renderSigle(d.groupe)}</strong> · {d.depute}{d.note ? ` — ${d.note}` : ""}
+                    {/* Positions des groupes */}
+                    {scrutin.groupes && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+                        {scrutin.groupes.map((g) => (
+                          <span
+                            key={g.sigle}
+                            style={{ fontSize: "0.72rem", padding: "3px 10px", borderRadius: 2, background: "#f5f6f8", border: "1px solid #e0e0e0", color: getPositionColor(g.position) }}
+                          >
+                            <strong>{renderSigle(g.sigle)}</strong> · {g.position}
                           </span>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Lien Assemblée nationale */}
-                  <a
-                    href={scrutin.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs mt-4 inline-block hover:underline"
-                    style={{ color: "#999", fontFamily: "Arial, sans-serif" }}
-                  >
-                    Voir sur Assemblée-nationale.fr →
-                  </a>
-                </div>
-              ))}
+                    {/* Analyse */}
+                    {scrutin.analyse && (
+                      <p style={{ fontSize: "0.85rem", lineHeight: 1.65, color: "#555", marginBottom: 16 }}>
+                        {scrutin.analyse}
+                      </p>
+                    )}
+
+                    {/* Dissidences */}
+                    {scrutin.dissidences && scrutin.dissidences.length > 0 && (
+                      <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid #ebebeb" }}>
+                        <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#aaa", marginBottom: 8 }}>
+                          Dissidences notables
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                          {scrutin.dissidences.map((d, i) => (
+                            <span key={i} style={{ fontSize: "0.78rem", color: "#666" }}>
+                              <strong>{renderSigle(d.groupe)}</strong> · {d.depute}{d.note ? ` — ${d.note}` : ""}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Lien AN */}
+                    <a
+                      href={scrutin.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ fontSize: "0.72rem", marginTop: 16, display: "inline-block", color: "#1a3a5c", textDecoration: "underline" }}
+                    >
+                      Voir sur Assemblée-nationale.fr →
+                    </a>
+                  </div>
+                );
+              })}
             </div>
           </section>
         )}
 
         {/* Classement cohésion */}
         {investigation.classement && (
-          <section className="mb-12">
-            <h3
-              className="text-xs font-bold uppercase tracking-widest mb-6 pb-2"
-              style={{ borderBottom: "1px solid #d4c9b0", color: "#888", fontFamily: "Arial, sans-serif" }}
-            >
+          <section style={{ marginBottom: 64 }}>
+            <div style={{ fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "#bbb", marginBottom: 24, borderTop: "2px solid #111", paddingTop: 20 }}>
               Classement par taux de cohésion
-            </h3>
-            <div className="flex flex-col gap-3">
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {investigation.classement.map((g, i) => (
-                <div
-                  key={g.sigle}
-                  className="p-4 rounded-sm"
-                  style={{ background: "#fff", border: "1px solid #d4c9b0" }}
-                >
-                  <div className="flex items-center gap-4 mb-2">
-                    <span className="text-sm font-bold w-5 text-right" style={{ color: "#bbb", fontFamily: "Arial, sans-serif" }}>
-                      {i + 1}
-                    </span>
-                    <span className="text-sm font-bold" style={{ color: "#4a4a4a", fontFamily: "Arial, sans-serif", minWidth: "3rem" }}>
-                      {g.sigle}
-                    </span>
-                    {/* Barre */}
-                    <div className="flex-1 h-3 rounded-sm" style={{ background: "#f0ece3" }}>
+                <div key={g.sigle} style={{ background: "#fff", border: "1px solid #e0e0e0", padding: "18px 24px", borderRadius: 2 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
+                    <span style={{ fontSize: "0.82rem", fontWeight: 900, width: 20, textAlign: "right", color: "#ddd" }}>{i + 1}</span>
+                    <span style={{ fontSize: "0.85rem", fontWeight: 800, color: "#111", minWidth: "3rem" }}>{g.sigle}</span>
+                    <div style={{ flex: 1, height: 10, borderRadius: 2, background: "#f0f0f0" }}>
                       <div
-                        className="h-3 rounded-sm"
-                        style={{ width: `${g.taux}%`, background: g.taux >= 95 ? "#2d6a2d" : g.taux >= 90 ? "#b07d00" : "#8b1a1a" }}
+                        style={{ width: `${g.taux}%`, height: 10, borderRadius: 2, background: g.taux >= 95 ? "#2a6a2a" : g.taux >= 90 ? "#b07d00" : "#c1121f" }}
                       />
                     </div>
-                    <span className="text-sm font-bold w-14 text-right" style={{ color: "#4a4a4a", fontFamily: "Arial, sans-serif" }}>
-                      {g.taux} %
-                    </span>
+                    <span style={{ fontSize: "0.85rem", fontWeight: 800, width: 52, textAlign: "right", color: "#111" }}>{g.taux} %</span>
                   </div>
-                  <div className="pl-9">
-                    <span className="text-xs" style={{ color: "#666", fontFamily: "Arial, sans-serif" }}>
+                  <div style={{ paddingLeft: 36 }}>
+                    <span style={{ fontSize: "0.75rem", color: "#666" }}>
                       <strong>{g.nom}</strong> — {g.note}
                     </span>
                   </div>
@@ -260,29 +227,20 @@ export default async function InvestigationPage({
         )}
 
         {/* Conclusion */}
-        <section
-          className="p-6 rounded-sm"
-          style={{ background: "#fff", border: "1px solid #d4c9b0" }}
-        >
-          <h3
-            className="text-xs font-bold uppercase tracking-widest mb-3"
-            style={{ color: "#888", fontFamily: "Arial, sans-serif" }}
-          >
+        <section style={{ background: "#fff", border: "1px solid #e0e0e0", borderTop: "3px solid #1a3a5c", padding: 32, borderRadius: "0 0 2px 2px" }}>
+          <div style={{ fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.16em", color: "#bbb", marginBottom: 14 }}>
             Ce que cela révèle
-          </h3>
-          <p className="text-base leading-relaxed" style={{ color: "#333", fontFamily: "Georgia, serif" }}>
+          </div>
+          <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "#333" }}>
             {investigation.conclusion}
           </p>
         </section>
+
       </main>
 
       {/* Footer */}
-      <footer
-        className="text-xs text-center py-6 px-4 mt-8"
-        style={{ borderTop: "1px solid #d4c9b0", color: "#999", fontFamily: "Arial, sans-serif" }}
-      >
-        Données : <a href="https://www.nosdeputes.fr" className="underline">NosDéputés.fr</a> (Regards Citoyens) · CC-BY-SA / ODbL ·{" "}
-        <a href="https://github.com/YohannLeFaou/nos-deputes-mcp" className="underline">MCP open-source</a>
+      <footer style={{ borderTop: "1px solid #e0e0e0", padding: "24px 40px", color: "#bbb", fontSize: "0.72rem", marginTop: 64, display: "flex", justifyContent: "space-between", maxWidth: 1120, margin: "64px auto 0", width: "100%" }}>
+        <span>Données : <a href="https://www.nosdeputes.fr" style={{ color: "#999" }}>NosDéputés.fr</a> · CC-BY-SA / ODbL · <a href="https://github.com/YohannLeFaou/nos-deputes-mcp" style={{ color: "#999" }}>MCP open-source</a></span>
       </footer>
     </div>
   );
