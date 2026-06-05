@@ -260,7 +260,7 @@ export default function Chat() {
       )}
 
       {/* Input */}
-      <div style={{ display: "flex", gap: 8 }}>
+      <div className="chat-input-row">
         <textarea
           value={input}
           onChange={(e) => {
@@ -276,7 +276,7 @@ export default function Chat() {
           }}
           placeholder="Ex : Combien y a-t-il de groupes différents à l'Assemblée ?"
           disabled={loading}
-          rows={1}
+          rows={2}
           style={{
             flex: 1, padding: "14px 18px", fontSize: "0.85rem",
             border: "1.5px solid #cdd4e0", borderRadius: 2,
@@ -288,6 +288,7 @@ export default function Chat() {
         <button
           onClick={sendQuestion}
           disabled={loading || !input.trim()}
+          className="chat-send-btn"
           style={{
             padding: "14px 28px", fontSize: "0.82rem", fontWeight: 800,
             border: "none", borderRadius: 2, background: "#1a3a5c", color: "#fff",

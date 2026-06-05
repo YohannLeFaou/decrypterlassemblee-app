@@ -194,6 +194,12 @@ body {
   text-align: right;
 }
 
+/* ─── Chat input ──────────────────────────────────────────── */
+.chat-input-row {
+  display: flex;
+  gap: 8px;
+}
+
 } /* end @layer base */
 
 /* ─── Mobile breakpoint ───────────────────────────────────── */
@@ -262,6 +268,12 @@ body {
   /* Chat section */
   .chat-box {
     padding: 20px 16px !important;
+  }
+  .chat-input-row {
+    flex-direction: column;
+  }
+  .chat-send-btn {
+    width: 100%;
   }
 
   /* Investigation page header */
