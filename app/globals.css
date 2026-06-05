@@ -22,3 +22,257 @@ body {
   color: var(--text);
   font-family: Arial, sans-serif;
 }
+
+/* ─── Header ─────────────────────────────────────────────── */
+.site-header {
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0 40px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+.header-nav-desktop {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-link {
+  padding: 7px 16px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 2px;
+  color: #555;
+  letter-spacing: 0.03em;
+}
+
+.nav-link-cta {
+  font-weight: 800;
+  background: #1a3a5c;
+  color: #fff !important;
+}
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  width: 36px;
+  height: 36px;
+}
+
+.hamburger-line {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #333;
+  border-radius: 2px;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.hamburger-line.open-1 { transform: translateY(7px) rotate(45deg); }
+.hamburger-line.open-2 { opacity: 0; }
+.hamburger-line.open-3 { transform: translateY(-7px) rotate(-45deg); }
+
+.mobile-menu {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid #e8e8e8;
+  background: #fff;
+}
+
+.mobile-link {
+  padding: 14px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #333;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.mobile-link-cta {
+  background: #1a3a5c;
+  color: #fff !important;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* ─── Page layout ─────────────────────────────────────────── */
+.page-main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 64px 40px;
+  width: 100%;
+}
+
+.page-footer {
+  border-top: 1px solid #e0e0e0;
+  padding: 24px 40px;
+  color: #bbb;
+  font-size: 0.72rem;
+  margin: 64px auto 0;
+  max-width: 1120px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ─── Hero ────────────────────────────────────────────────── */
+.hero-title {
+  font-size: 3rem;
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  color: #111;
+  margin-bottom: 24px;
+  max-width: 720px;
+}
+
+.hero-ctas {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+/* ─── Stats grid ──────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 1px solid #e0e0e0;
+  margin-bottom: 80px;
+  background: #fff;
+}
+
+.stats-cell {
+  padding: 28px 24px;
+}
+
+/* ─── Investigations list ─────────────────────────────────── */
+.inv-row {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  align-items: start;
+  gap: 24px;
+  padding: 28px 0;
+  border-bottom: 1px solid #ebebeb;
+  text-decoration: none;
+  color: inherit;
+}
+
+.inv-num {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #e8e8e8;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  padding-top: 4px;
+}
+
+.inv-meta {
+  font-size: 0.7rem;
+  color: #ccc;
+  white-space: nowrap;
+  padding-top: 6px;
+  text-align: right;
+}
+
+/* ─── Mobile breakpoint ───────────────────────────────────── */
+@media (max-width: 640px) {
+  /* Header */
+  .site-header {
+    padding: 0 16px;
+  }
+  .header-nav-desktop {
+    display: none;
+  }
+  .hamburger {
+    display: flex;
+  }
+
+  /* Page layout */
+  .page-main {
+    padding: 36px 20px;
+  }
+  .page-footer {
+    padding: 20px 20px;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 48px;
+  }
+
+  /* Hero */
+  .hero-title {
+    font-size: 1.85rem;
+    letter-spacing: -0.025em;
+  }
+  .hero-ctas {
+    flex-direction: column;
+  }
+  .hero-ctas a {
+    text-align: center;
+  }
+
+  /* Stats */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    margin-bottom: 48px;
+  }
+  .stats-cell:nth-child(1),
+  .stats-cell:nth-child(2) {
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .stats-cell:nth-child(odd) {
+    border-right: 1px solid #e0e0e0;
+  }
+
+  /* Investigations */
+  .inv-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 20px 0;
+  }
+  .inv-num {
+    display: none;
+  }
+  .inv-meta {
+    text-align: left;
+    padding-top: 0;
+  }
+
+  /* Chat section */
+  .chat-box {
+    padding: 20px 16px !important;
+  }
+
+  /* Investigation page header */
+  .inv-page-title {
+    font-size: 1.75rem !important;
+  }
+
+  /* Scrutin cards */
+  .scrutin-header-row {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  /* FAQ / Contact / Mentions */
+  .page-h1 {
+    font-size: 1.85rem !important;
+  }
+}

@@ -1,30 +1,17 @@
+import Header from "@/components/Header";
+
 export default function MentionsLegalesPage() {
   return (
     <div className="flex flex-col min-h-screen" style={{ background: "#fafaf8" }}>
-      {/* Header */}
-      <header style={{ background: "#fff", borderBottom: "1px solid #e0e0e0", padding: "0 40px", position: "sticky", top: 0, zIndex: 10 }}>
-        <div style={{ maxWidth: 1120, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
-          <a href="/" style={{ textDecoration: "none" }}>
-            <div style={{ fontSize: "1.05rem", fontWeight: 800, letterSpacing: "-0.01em", color: "#111" }}>
-              Décrypter l&apos;Assemblée
-            </div>
-            <div style={{ fontSize: "0.62rem", color: "#aaa", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 2 }}>
-              16e &amp; 17e législature · 2022–aujourd&apos;hui
-            </div>
-          </a>
-          <a href="/" style={{ fontSize: "0.78rem", fontWeight: 600, textDecoration: "none", color: "#555", letterSpacing: "0.03em" }}>
-            ← Retour à l&apos;accueil
-          </a>
-        </div>
-      </header>
+      <Header variant="back" />
 
-      <main style={{ maxWidth: 1120, margin: "0 auto", padding: "64px 40px", width: "100%" }}>
+      <main className="page-main">
 
         <div style={{ marginBottom: 48 }}>
           <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "#1a3a5c", marginBottom: 16 }}>
             Informations légales
           </div>
-          <h1 style={{ fontSize: "2.6rem", fontWeight: 900, lineHeight: 1.08, letterSpacing: "-0.04em", color: "#111", maxWidth: 640 }}>
+          <h1 className="page-h1" style={{ fontSize: "2.6rem", fontWeight: 900, lineHeight: 1.08, letterSpacing: "-0.04em", color: "#111", maxWidth: 640 }}>
             Mentions légales
           </h1>
         </div>
@@ -81,8 +68,7 @@ export default function MentionsLegalesPage() {
 
       </main>
 
-      {/* Footer */}
-      <footer style={{ borderTop: "1px solid #e0e0e0", padding: "24px 40px", color: "#bbb", fontSize: "0.72rem", marginTop: 64, display: "flex", justifyContent: "space-between", maxWidth: 1120, margin: "64px auto 0", width: "100%" }}>
+      <footer className="page-footer">
         <span>Données : <a href="https://data.assemblee-nationale.fr" style={{ color: "#999" }}>Assemblée nationale open data</a> · Licence Ouverte v2.0</span>
         <span>
           <a href="/faq" style={{ color: "#999" }}>FAQ</a> ·{" "}

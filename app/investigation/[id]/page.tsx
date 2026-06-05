@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getInvestigation, investigations } from "@/lib/investigations";
+import Header from "@/components/Header";
 
 export function generateStaticParams() {
   return investigations.map((inv) => ({ id: inv.id }));
@@ -59,47 +60,21 @@ export default async function InvestigationPage({
 
   return (
     <div className="flex flex-col min-h-screen" style={{ background: "#fafaf8" }}>
-      {/* Header */}
-      <header style={{ background: "#fff", borderBottom: "1px solid #e0e0e0", padding: "0 40px", position: "sticky", top: 0, zIndex: 10 }}>
-        <div style={{ maxWidth: 1120, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
-          <a href="/" style={{ textDecoration: "none" }}>
-            <div style={{ fontSize: "1.05rem", fontWeight: 800, letterSpacing: "-0.01em", color: "#111" }}>
-              Décrypter l&apos;Assemblée
-            </div>
-            <div style={{ fontSize: "0.62rem", color: "#aaa", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 2 }}>
-              16e &amp; 17e législature · 2022–aujourd&apos;hui
-            </div>
-          </a>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <a href="/faq" style={{ fontSize: "0.78rem", fontWeight: 600, textDecoration: "none", color: "#555", letterSpacing: "0.03em" }}>
-              FAQ
-            </a>
-            <a href="/faq" style={{ fontSize: "0.78rem", fontWeight: 600, textDecoration: "none", color: "#555", letterSpacing: "0.03em" }}>
-              FAQ
-            </a>
-            <a href="/contact" style={{ fontSize: "0.78rem", fontWeight: 600, textDecoration: "none", color: "#555", letterSpacing: "0.03em" }}>
-              Contact
-            </a>
-            <a href="/" style={{ fontSize: "0.78rem", fontWeight: 600, textDecoration: "none", color: "#555", letterSpacing: "0.03em" }}>
-              ← Toutes les investigations
-            </a>
-          </div>
-        </div>
-      </header>
+      <Header variant="back" />
 
       {/* Bandeau données */}
       <div style={{ background: "#f7f7f7", borderBottom: "1px solid #e8e8e8", fontSize: "0.68rem", textAlign: "center", padding: "6px 16px", color: "#999", letterSpacing: "0.04em" }}>
         Données mises à jour quotidiennement · 16e et 17e législature · Assemblée nationale open data
       </div>
 
-      <main style={{ maxWidth: 1120, margin: "0 auto", padding: "64px 40px", width: "100%" }}>
+      <main className="page-main">
 
         {/* En-tête investigation */}
         <div style={{ marginBottom: 64 }}>
           <span style={{ fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.16em", color: "#1a3a5c" }}>
             {investigation.tag}
           </span>
-          <h1 style={{ fontSize: "2.6rem", fontWeight: 900, marginTop: 10, marginBottom: 20, lineHeight: 1.1, letterSpacing: "-0.03em", color: "#111", maxWidth: 760 }}>
+          <h1 className="inv-page-title" style={{ fontSize: "2.6rem", fontWeight: 900, marginTop: 10, marginBottom: 20, lineHeight: 1.1, letterSpacing: "-0.03em", color: "#111", maxWidth: 760 }}>
             {investigation.title}
           </h1>
           <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "#555", maxWidth: 640 }}>
@@ -123,7 +98,7 @@ export default async function InvestigationPage({
                     style={{ background: "#fff", border: "1px solid #e0e0e0", borderLeft: "3px solid #1a3a5c", padding: 28, borderRadius: "0 2px 2px 0" }}
                   >
                     {/* Titre + badge */}
-                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 16 }}>
+                    <div className="scrutin-header-row" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 16 }}>
                       <div>
                         <div style={{ fontSize: "0.68rem", color: "#aaa", marginBottom: 4 }}>
                           Scrutin {scrutin.numero} · {new Date(scrutin.date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
@@ -250,7 +225,7 @@ export default async function InvestigationPage({
       </main>
 
       {/* Footer */}
-      <footer style={{ borderTop: "1px solid #e0e0e0", padding: "24px 40px", color: "#bbb", fontSize: "0.72rem", marginTop: 64, display: "flex", justifyContent: "space-between", maxWidth: 1120, margin: "64px auto 0", width: "100%" }}>
+      <footer className="page-footer">
         <span>Données : <a href="https://www.nosdeputes.fr" style={{ color: "#999" }}>NosDéputés.fr</a> · CC-BY-SA / ODbL</span>
         <span><a href="/faq" style={{ color: "#999" }}>FAQ</a> · <a href="/contact" style={{ color: "#999" }}>Contact</a> · <a href="/mentions-legales" style={{ color: "#999" }}>Mentions légales</a></span>
       </footer>
