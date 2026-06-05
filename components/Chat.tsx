@@ -303,6 +303,9 @@ export default function Chat() {
       <p style={{ fontSize: "0.68rem", color: "#bbb", marginTop: 8 }}>
         Limité à 10 questions par jour · Données : 16e et 17e législature
       </p>
+      <p style={{ fontSize: "0.68rem", color: "#bbb", marginTop: 4, fontStyle: "italic" }}>
+        Les réponses sont générées par une IA et peuvent contenir des erreurs — vérifiez les informations importantes sur <a href="https://www.assemblee-nationale.fr" target="_blank" rel="noopener noreferrer" style={{ color: "#bbb" }}>assemblee-nationale.fr</a>.
+      </p>
     </div>
   );
 }
