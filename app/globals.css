@@ -23,6 +23,8 @@ body {
   font-family: Arial, sans-serif;
 }
 
+@layer base {
+
 /* ─── Header ─────────────────────────────────────────────── */
 .site-header {
   background: #fff;
@@ -191,6 +193,8 @@ body {
   padding-top: 6px;
   text-align: right;
 }
+
+} /* end @layer base */
 
 /* ─── Mobile breakpoint ───────────────────────────────────── */
 @media (max-width: 640px) {
