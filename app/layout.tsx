@@ -1,10 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Décrypter l'Assemblée",
   description: "Explorez les votes et les positions des députés français à l'Assemblée nationale (16e et 17e législature).",
   icons: { icon: "/bourbon.svg" },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
