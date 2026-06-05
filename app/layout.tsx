@@ -4,7 +4,13 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Décrypter l'Assemblée",
   description: "Explorez les votes et les positions des députés français à l'Assemblée nationale (16e et 17e législature).",
-  icons: { icon: "/bourbon.svg" },
+  icons: {
+    icon: [
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/bourbon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
