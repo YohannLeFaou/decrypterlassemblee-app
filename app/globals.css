@@ -200,6 +200,22 @@ body {
   gap: 8px;
 }
 
+/* ─── Chat markdown ───────────────────────────────────────── */
+.chat-markdown ul {
+  list-style-type: disc !important;
+  padding-left: 1.2em;
+  margin-bottom: 0.5em;
+}
+.chat-markdown ol {
+  list-style-type: decimal !important;
+  padding-left: 1.2em;
+  margin-bottom: 0.5em;
+}
+.chat-markdown li {
+  display: list-item !important;
+  margin-bottom: 0.25em;
+}
+
 } /* end @layer base */
 
 /* ─── Mobile breakpoint ───────────────────────────────────── */

@@ -15,7 +15,10 @@ export async function POST(req: NextRequest) {
   }
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? req.headers.get("x-real-ip") ?? "unknown";
-  const { allowed, remaining } = checkRateLimit(ip);
+  const whitelist = (process.env.RATE_LIMIT_WHITELIST ?? "").split(",").map(s => s.trim()).filter(Boolean);
+  const { allowed, remaining } = whitelist.includes(ip)
+    ? { allowed: true, remaining: 999 }
+    : checkRateLimit(ip);
   if (!allowed) {
     return new Response(JSON.stringify({ error: "Limite journalière atteinte (10 questions/jour par IP). Réessayez demain." }), {
       status: 429,

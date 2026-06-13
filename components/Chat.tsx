@@ -28,6 +28,26 @@ function normalizeMarkdown(text: string): string {
   });
 }
 
+type SourceLink = { label: string; href: string };
+
+// Split response text into body + sources section.
+// Sources section starts at the last "---\nSources" block.
+function splitSources(text: string): { body: string; sources: SourceLink[] } {
+  const idx = text.lastIndexOf("\n---\n");
+  if (idx === -1) return { body: text, sources: [] };
+  const after = text.slice(idx + 5); // skip "\n---\n"
+  if (!/sources\s*:/i.test(after.split("\n")[0])) return { body: text, sources: [] };
+
+  const body = text.slice(0, idx);
+  const sources: SourceLink[] = [];
+  const linkRe = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
+  let m;
+  while ((m = linkRe.exec(after)) !== null) {
+    sources.push({ label: m[1], href: m[2] });
+  }
+  return { body, sources };
+}
+
 const TOOL_LABELS: Record<string, string> = {
   execute_python: "Interrogation de la base",
 };
@@ -180,54 +200,67 @@ export default function Chat() {
                     </div>
                   )}
                   {/* Réponse */}
-                  {msg.text && (
-                    <div
-                      className="prose prose-sm max-w-none"
-                      style={{ fontSize: "0.85rem", lineHeight: 1.65, color: "#111" }}
-                    >
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          a: ({ href, children }) => (
-                            <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: "#1a3a5c", textDecoration: "underline" }}>
-                              {children}
-                            </a>
-                          ),
-                          strong: ({ children }) => (
-                            <strong style={{ fontWeight: 700, color: "#111" }}>{children}</strong>
-                          ),
-                          em: ({ children }) => (
-                            <em style={{ fontStyle: "italic" }}>{children}</em>
-                          ),
-                          table: ({ children }) => (
-                            <div style={{ overflowX: "auto", width: "100%" }}>
-                              <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.8em", whiteSpace: "nowrap" }}>{children}</table>
-                            </div>
-                          ),
-                          th: ({ children }) => (
-                            <th style={{ borderBottom: "2px solid #e0e0e0", padding: "4px 8px", textAlign: "left", fontWeight: 700 }}>{children}</th>
-                          ),
-                          td: ({ children }) => (
-                            <td style={{ borderBottom: "1px solid #ebebeb", padding: "4px 8px" }}>{children}</td>
-                          ),
-                          p: ({ children }) => (
-                            <p style={{ marginBottom: "0.5em" }}>{children}</p>
-                          ),
-                          ul: ({ children }) => (
-                            <ul style={{ paddingLeft: "1.2em", marginBottom: "0.5em", listStyleType: "disc" }}>{children}</ul>
-                          ),
-                          ol: ({ children }) => (
-                            <ol style={{ paddingLeft: "1.2em", marginBottom: "0.5em", listStyleType: "decimal" }}>{children}</ol>
-                          ),
-                        }}
+                  {msg.text && (() => {
+                    const { body, sources } = splitSources(msg.text);
+                    return (
+                      <div
+                        className="chat-markdown"
+                        style={{ fontSize: "0.85rem", lineHeight: 1.65, color: "#111" }}
                       >
-                        {normalizeMarkdown(msg.text)}
-                      </ReactMarkdown>
-                      {loading && i === messages.length - 1 && (
-                        <span className="animate-pulse">▌</span>
-                      )}
-                    </div>
-                  )}
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            hr: () => (
+                              <hr style={{ border: "none", borderTop: "1px solid #e0e0e0", margin: "1em 0" }} />
+                            ),
+                            a: ({ href, children }) => (
+                              <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: "#1a3a5c", textDecoration: "underline" }}>
+                                {children}
+                              </a>
+                            ),
+                            strong: ({ children }) => (
+                              <strong style={{ fontWeight: 700, color: "#111" }}>{children}</strong>
+                            ),
+                            em: ({ children }) => (
+                              <em style={{ fontStyle: "italic" }}>{children}</em>
+                            ),
+                            table: ({ children }) => (
+                              <div style={{ overflowX: "auto", width: "100%" }}>
+                                <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.8em", whiteSpace: "nowrap" }}>{children}</table>
+                              </div>
+                            ),
+                            th: ({ children }) => (
+                              <th style={{ borderBottom: "2px solid #e0e0e0", padding: "4px 8px", textAlign: "left", fontWeight: 700 }}>{children}</th>
+                            ),
+                            td: ({ children }) => (
+                              <td style={{ borderBottom: "1px solid #ebebeb", padding: "4px 8px" }}>{children}</td>
+                            ),
+                            p: ({ children }) => (
+                              <p style={{ marginBottom: "0.5em" }}>{children}</p>
+                            ),
+                          }}
+                        >
+                          {normalizeMarkdown(body)}
+                        </ReactMarkdown>
+                        {sources.length > 0 && (
+                          <div style={{ marginTop: "1em", borderTop: "1px solid #e0e0e0", paddingTop: "0.75em" }}>
+                            <span style={{ fontSize: "0.75rem", color: "#888", marginBottom: "0.4em", display: "block" }}>Sources :</span>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "0.3em" }}>
+                              {sources.map((s, idx) => (
+                                <a key={idx} href={s.href} target="_blank" rel="noopener noreferrer"
+                                  style={{ color: "#1a3a5c", textDecoration: "underline", fontSize: "0.8rem" }}>
+                                  {s.label}
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {loading && i === messages.length - 1 && (
+                          <span className="animate-pulse">▌</span>
+                        )}
+                      </div>
+                    );
+                  })()}
                   {!msg.text && (!msg.toolCalls || msg.toolCalls.length === 0) && loading && i === messages.length - 1 && (
                     <span style={{ fontSize: "0.85rem", color: "#aaa" }} className="animate-pulse">
                       Réflexion en cours...
