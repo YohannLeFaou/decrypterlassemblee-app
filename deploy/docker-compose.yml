@@ -11,6 +11,7 @@ services:
       - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-}
       - MISTRAL_API_KEY=${MISTRAL_API_KEY:-}
       - MISTRAL_MODEL=${MISTRAL_MODEL:-}
+      - RATE_LIMIT_WHITELIST=${RATE_LIMIT_WHITELIST:-}
       - SANDBOX_URL=http://sandbox:5000
       - HOSTNAME=0.0.0.0
     networks:
