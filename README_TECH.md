@@ -4,8 +4,8 @@
 
 Le projet repose sur deux dépôts distincts :
 
-- **decrypterlassemblee-app** (ce repo) : l'application web Next.js + le sandbox Python
-- **decrypterlassemblee-data** (repo séparé) : l'ETL qui télécharge et structure les données de l'Assemblée nationale dans une base SQLite (`an.db`)
+- **decrypterlassemblee-app** (ce repo) : l'application web Next.js + le sandbox Python → [github.com/YohannLeFaou/decrypterlassemblee-app](https://github.com/YohannLeFaou/decrypterlassemblee-app)
+- **decrypterlassemblee-data** (repo séparé) : l'ETL qui télécharge et structure les données de l'Assemblée nationale dans une base SQLite (`an.db`) → [github.com/YohannLeFaou/decrypterlassemblee-data](https://github.com/YohannLeFaou/decrypterlassemblee-data)
 
 ```
 decrypterlassemblee-data/   →  an.db  →  decrypterlassemblee-app/
