@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Décrypter l'Assemblée
 
-## Getting Started
+## Quesaco ?
 
-First, run the development server:
+Savez-vous comment vote votre député ?
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+[decrypterlassemblee.fr](https://decrypterlassemblee.fr) est un outil gratuit pour explorer et analyser les votes à l'Assemblée nationale.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+L'État met déjà ces données à disposition en open data. Problème : elles sont riches mais quasi-inexploitables sans compétences techniques. Des centaines de milliers de scrutins, des millions de positions de vote individuelles... autant d'informations qui dorment dans des fichiers XML que personne ne lit.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+C'est là que l'IA entre en jeu : rendre ces informations lisibles et accessibles à tous. Posez une question en français, obtenez une réponse sourcée et vérifiable. Qui a voté quoi ? Quels groupes s'allient sur quels sujets ? Quels députés votent contre leur propre camp ?
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Un exemple concret de ce que la technologie peut apporter à la vie démocratique : transformer des données publiques en connaissance citoyenne.
 
-## Learn More
+## Comment ça marche ?
 
-To learn more about Next.js, take a look at the following resources:
+Un agent IA connecté aux données de l'Assemblée nationale répond à vos questions en langage naturel. Lorsque vous posez une question, l'agent interroge automatiquement la base de données des scrutins et formule une réponse sourcée.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Les données couvrent la **16e législature** (juin 2022 - juin 2024) et la **17e législature** (depuis octobre 2024), mises à jour quotidiennement. Les nouveaux scrutins sont disponibles sous 24h.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Les réponses sont basées sur des données officielles. Comme tout système d'IA, des erreurs d'interprétation restent possibles : pour tout usage important, vérifiez directement sur le site de l'Assemblée nationale.
 
-## Deploy on Vercel
+## Sources de données
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- [data.assemblee-nationale.fr](https://data.assemblee-nationale.fr) : votes, dossiers législatifs, amendements, réunions de commissions
+- [assemblee-nationale.fr](https://www.assemblee-nationale.fr) : informations et analyses sur le site de l'Assemblée nationale
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Projets similaires
+
+- [nosdeputes.fr](https://www.regardscitoyens.org/nosdeputes-fr/) (Regards Citoyens) : référence historique du genre, non maintenu depuis la fin de la XVIe législature (juin 2024)
+- [decryptaloi.fr](https://www.decryptaloi.fr/) : analyse des textes législatifs et décryptage d'amendements, sans jargon juridique
+
+## Technologie
+
+- **Modèle IA :** DeepSeek, le plus performant parmi les modèles testés
+- **Hébergement :** serveurs européens
+- **RGPD :** aucune donnée utilisateur n'est collectée ni conservée. Les questions posées transitent vers l'API DeepSeek mais ne sont pas loggées côté serveur. L'historique de conversation existe uniquement le temps de votre session dans votre navigateur.
+
+## Contribuer
+
+Le projet est open source et ouvert aux contributions. N'hésitez pas à ouvrir une issue ou une pull request.

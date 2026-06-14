@@ -7,29 +7,50 @@ import { checkRateLimit } from "@/lib/rate-limit";
 
 const MAX_TOOL_ROUNDS = 12;
 
+import { createHash } from "crypto";
+
+function hashIp(ip: string): string {
+  return createHash("sha256").update(ip).digest("hex").slice(0, 12);
+}
+
+function logRequest(fields: Record<string, unknown>) {
+  process.stdout.write(JSON.stringify({ ts: new Date().toISOString(), ...fields }) + "\n");
+}
+
 export async function POST(req: NextRequest) {
   const { question, history } = await req.json();
+  const startMs = Date.now();
 
   if (!question?.trim()) {
     return new Response("Question vide", { status: 400 });
   }
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? req.headers.get("x-real-ip") ?? "unknown";
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
   const whitelist = (process.env.RATE_LIMIT_WHITELIST ?? "").split(",").map(s => s.trim()).filter(Boolean);
   const { allowed, remaining } = whitelist.includes(ip)
     ? { allowed: true, remaining: 999 }
     : checkRateLimit(ip);
+
   if (!allowed) {
+    logRequest({ event: "rate_limited", ip_hash: hashIp(ip), user_agent: userAgent });
     return new Response(JSON.stringify({ error: "Limite journalière atteinte (10 questions/jour par IP). Réessayez demain." }), {
       status: 429,
       headers: { "Content-Type": "application/json" },
     });
   }
-  const isFollowUp = Array.isArray(history) && history.length > 0;
-  console.log(`[chat] ip=${ip} remaining=${remaining} follow_up=${isFollowUp} question=${JSON.stringify(question.slice(0, 200))}`);
 
   const provider = getProvider();
   const encoder = new TextEncoder();
+  const isFollowUp = Array.isArray(history) && history.length > 0;
+
+  // Métriques accumulées pendant le traitement
+  const metrics = {
+    rounds: 0,
+    python_calls: 0,
+    python_errors: 0,
+    status: "ok" as "ok" | "error" | "crash",
+  };
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -44,9 +65,8 @@ export async function POST(req: NextRequest) {
         ];
 
         for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-          console.log(`[chat] round ${round} — calling ${process.env.LLM_PROVIDER ?? "anthropic"}`);
+          metrics.rounds = round + 1;
           const response = await provider.chat(messages, MCP_TOOLS, SYSTEM_PROMPT);
-          console.log(`[chat] round ${round} — stop_reason=${response.stopReason} tool_calls=${response.toolCalls.length}`);
 
           if (response.text) {
             const prefix = round > 0 ? "\n\n" : "";
@@ -67,10 +87,10 @@ export async function POST(req: NextRequest) {
 
           const toolResults: ToolResult[] = [];
           for (const tc of response.toolCalls) {
-            console.log(`[chat] execute_python start`);
+            metrics.python_calls++;
             const code = tc.input.code as string;
             const result = await executePython(code);
-            console.log(`[chat] execute_python done stdout_len=${result.stdout.length} error=${result.error ?? "none"}`);
+            if (result.error) metrics.python_errors++;
             send({ type: "tool_result", name: tc.name });
             toolResults.push({ id: tc.id, content: JSON.stringify(result) });
           }
@@ -78,12 +98,25 @@ export async function POST(req: NextRequest) {
           messages.push({ role: "tool_result", toolResults });
         }
 
-        console.log(`[chat] done`);
         send({ type: "done" });
       } catch (err) {
+        metrics.status = "crash";
         console.error(`[chat] CRASH:`, err);
         send({ type: "error", message: String(err) });
       } finally {
+        logRequest({
+          event: "chat",
+          ip_hash: hashIp(ip),
+          user_agent: userAgent,
+          provider: process.env.LLM_PROVIDER ?? "deepseek",
+          follow_up: isFollowUp,
+          remaining_quota: remaining,
+          rounds: metrics.rounds,
+          python_calls: metrics.python_calls,
+          python_errors: metrics.python_errors,
+          status: metrics.status,
+          duration_ms: Date.now() - startMs,
+        });
         controller.close();
       }
     },

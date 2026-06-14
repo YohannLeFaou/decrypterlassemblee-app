@@ -14,6 +14,11 @@ services:
       - RATE_LIMIT_WHITELIST=${RATE_LIMIT_WHITELIST:-}
       - SANDBOX_URL=http://sandbox:5000
       - HOSTNAME=0.0.0.0
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
     networks:
       - frontend
       - sandbox_net
@@ -44,8 +49,8 @@ services:
 
   etl:
     build:
-      context: ../../nos-deputes-data
-      dockerfile: ../nos-deputes-app/deploy/etl/Dockerfile
+      context: ../../decrypterlassemblee-data
+      dockerfile: ../decrypterlassemblee-app/deploy/etl/Dockerfile
     volumes:
       - ./data:/data
     profiles:

@@ -1,8 +1,8 @@
-# Architecture — nos-deputes-app
+# Architecture — decrypterlassemblee-app
 
 Application Next.js permettant d'interroger les données parlementaires de l'Assemblée nationale via un agent IA générant et exécutant du code Python.
 
-_Dernière mise à jour : mai 2026 — migration vers l'architecture code agent._
+_Dernière mise à jour : juin 2026 — logs structurés, renommage repos._
 
 ---
 
@@ -39,7 +39,7 @@ Utilisateur (navigateur)
     ▼
 ┌──────────────────────────────────────────────────────┐
 │  ETL Python (Docker, on-demand)                      │
-│  nos-deputes-data — an-etl CLI                       │
+│  decrypterlassemblee-data — an-etl CLI                │
 │   └── an.db (monté read-write)                       │
 └──────────────────────────────────────────────────────┘
 ```
@@ -314,11 +314,11 @@ CMD ["node", "server.js"]
 
 ## ETL quotidien
 
-`deploy/etl/Dockerfile` embarque le package Python `nos-deputes-data` (CLI `an-etl`).
+`deploy/etl/Dockerfile` embarque le package Python `decrypterlassemblee-data` (CLI `an-etl`).
 
 Cron sur le VPS :
 ```
-0 3 * * * root cd /opt/nos-deputes/nos-deputes-app/deploy && docker compose run --rm etl >> /var/log/nos-deputes-etl.log 2>&1
+0 3 * * * root cd /opt/nos-deputes/decrypterlassemblee-app/deploy && docker compose run --rm etl >> /var/log/decrypterlassemblee-etl.log 2>&1
 ```
 
 L'ETL s'exécute en container éphémère (`--rm`). Il écrit dans `an.db`, le sandbox le lit en read-only. Pas de downtime pendant la mise à jour (WAL mode).
@@ -379,7 +379,7 @@ Implémentation simpliste (Map en mémoire) : suffisant pour la beta, redémarra
 
 | Variable | Description | Défaut |
 |---|---|---|
-| `LLM_PROVIDER` | Provider LLM actif | `anthropic` |
+| `LLM_PROVIDER` | Provider LLM actif | `deepseek` |
 | `DEEPSEEK_API_KEY` | Clé API DeepSeek | — |
 | `DEEPSEEK_MODEL` | Modèle DeepSeek | `deepseek-v4-flash` |
 | `ANTHROPIC_API_KEY` | Clé API Anthropic | — |
