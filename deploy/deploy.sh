@@ -17,7 +17,7 @@ fi
 SERVER="${DEPLOY_SERVER:?Variable DEPLOY_SERVER manquante (ex: root@1.2.3.4)}"
 SSH_KEY="${DEPLOY_SSH_KEY:-$HOME/.ssh/id_rsa}"
 SSH_OPTS="-i $SSH_KEY"
-REMOTE_DIR="/opt/nos-deputes/decrypterlassemblee-app"
+REMOTE_DIR="/opt/decrypterlassemblee/decrypterlassemblee-app"
 LOCAL_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 NO_BUILD=false

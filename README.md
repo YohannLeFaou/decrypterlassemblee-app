@@ -34,7 +34,7 @@ Les réponses sont basées sur des données officielles. Comme tout système d'I
 
 - **Modèle IA :** DeepSeek, le plus performant parmi les modèles testés
 - **Hébergement :** serveurs européens
-- **RGPD :** aucune donnée utilisateur n'est collectée ni conservée. Les questions posées transitent vers l'API DeepSeek mais ne sont pas loggées côté serveur. L'historique de conversation existe uniquement le temps de votre session dans votre navigateur.
+- **RGPD :** aucune donnée utilisateur n'est collectée ni conservée. Les questions posées transitent vers l'API DeepSeek mais ne sont pas loggées côté serveur. Seules des métriques anonymisées sont enregistrées (IP hachée, durée de traitement, nombre de rounds). L'historique de conversation existe uniquement le temps de votre session dans votre navigateur.
 
 ## Contribuer
 

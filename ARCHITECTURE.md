@@ -113,7 +113,7 @@ Variables d'env : `DEEPSEEK_API_KEY`, `DEEPSEEK_MODEL` (défaut : `deepseek-v4-f
 
 ### Pourquoi DeepSeek par défaut ?
 
-Benchmark interne (repo `nos-deputes-mcp`) sur 26 questions : 92 % de réussite pour DeepSeek V4 Flash, résultats comparables à Anthropic Claude Haiku pour un coût ~6× moindre. Le caching est automatique côté serveur DeepSeek (pas de code à écrire).
+Benchmark interne (repo `decrypterlassemblee-agent`) sur 26 questions : 92 % de réussite pour DeepSeek V4 Flash, résultats comparables à Anthropic Claude Haiku pour un coût ~6× moindre. Le caching est automatique côté serveur DeepSeek (pas de code à écrire).
 
 ---
 
@@ -139,7 +139,7 @@ L'ancienne architecture avait 7 outils SQL (search_depute, get_votes_depute, get
 
 ### Pourquoi HTTP (Flask) plutôt que stdin/stdout ?
 
-Le repo `nos-deputes-mcp` utilise stdin/stdout (Docker long-running). Pour la prod, HTTP est préférable :
+Le repo `decrypterlassemblee-agent` utilise stdin/stdout (Docker long-running). Pour la prod, HTTP est préférable :
 - Docker Compose gère le cycle de vie du service (restart, healthcheck)
 - L'app Next.js (TypeScript) fait un simple `fetch()`, pas besoin de gérer un processus fils
 - Le healthcheck Docker natif (`GET /health`) garantit que le sandbox est prêt avant l'app
@@ -318,7 +318,7 @@ CMD ["node", "server.js"]
 
 Cron sur le VPS :
 ```
-0 3 * * * root cd /opt/nos-deputes/decrypterlassemblee-app/deploy && docker compose run --rm etl >> /var/log/decrypterlassemblee-etl.log 2>&1
+0 3 * * * root cd /opt/decrypterlassemblee/decrypterlassemblee-app/deploy && docker compose run --rm etl >> /var/log/decrypterlassemblee-etl.log 2>&1
 ```
 
 L'ETL s'exécute en container éphémère (`--rm`). Il écrit dans `an.db`, le sandbox le lit en read-only. Pas de downtime pendant la mise à jour (WAL mode).
