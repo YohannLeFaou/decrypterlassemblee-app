@@ -1,5 +1,5 @@
 import { investigations } from "@/lib/investigations";
-import Chat from "@/components/Chat";
+import ChatWithReset from "@/components/ChatWithReset";
 import Header from "@/components/Header";
 
 export default function Home() {
@@ -98,9 +98,7 @@ export default function Home() {
           <div style={{ fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "#bbb", marginBottom: 24 }}>
             Posez votre propre question
           </div>
-          <div className="chat-box" style={{ background: "#f7f8fc", border: "1px solid #dce3ef", borderTop: "3px solid #1a3a5c", padding: 36, borderRadius: 2 }}>
-            <Chat />
-          </div>
+          <ChatWithReset />
         </section>
 
       </main>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useImperativeHandle, forwardRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -54,7 +54,17 @@ const TOOL_LABELS: Record<string, string> = {
 
 const SESSION_KEY = "chat_messages";
 
-export default function Chat() {
+export type ChatHandle = {
+  reset: () => void;
+};
+
+type ChatProps = {
+  /** Appelé à chaque changement de l'historique, pour piloter l'affichage du
+   * bouton de reset depuis un parent (Chat ignore où ce bouton est rendu). */
+  onHistoryChange?: (hasHistory: boolean) => void;
+};
+
+const Chat = forwardRef<ChatHandle, ChatProps>(function Chat({ onHistoryChange }, ref) {
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
@@ -71,7 +81,21 @@ export default function Chat() {
     try {
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(messages));
     } catch {}
-  }, [messages]);
+    onHistoryChange?.(messages.length > 0);
+  }, [messages, onHistoryChange]);
+
+  function resetConversation() {
+    abortRef.current?.abort();
+    setMessages([]);
+    setInput("");
+    try {
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch {}
+  }
+
+  useImperativeHandle(ref, () => ({
+    reset: resetConversation,
+  }));
 
   async function sendQuestion() {
     const question = input.trim();
@@ -341,4 +365,6 @@ export default function Chat() {
       </p>
     </div>
   );
-}
+});
+
+export default Chat;
