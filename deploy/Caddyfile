@@ -1,3 +1,7 @@
 decrypterlassemblee.fr {
     reverse_proxy app:3000
 }
+
+analytics.decrypterlassemblee.fr {
+    reverse_proxy umami:3000
+}
