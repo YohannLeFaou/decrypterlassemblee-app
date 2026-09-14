@@ -22,6 +22,14 @@ interface DeepSeekResponse {
   }[];
 }
 
+/** Erreurs réseau transitoires côté fournisseur : la requête n'a pas abouti, un retry a du sens. */
+function isTransient(err: unknown): boolean {
+  const msg = err instanceof Error ? `${err.message} ${String(err.cause ?? "")}` : String(err);
+  return /fetch failed|other side closed|ECONNRESET|ETIMEDOUT|EPIPE|socket hang up|terminated/i.test(msg);
+}
+
+const RETRY_DELAYS_MS = [500, 1500];
+
 export class DeepSeekProvider implements LLMProvider {
   private apiKey: string;
   private model: string;
@@ -29,7 +37,9 @@ export class DeepSeekProvider implements LLMProvider {
 
   constructor() {
     this.apiKey = process.env.DEEPSEEK_API_KEY ?? "";
-    this.model = process.env.DEEPSEEK_MODEL ?? "deepseek-v4-flash";
+    // "deepseek-v4-flash" n'existe plus : l'API redirige silencieusement vers
+    // "deepseek-flash". On nomme le modèle réel pour ne pas dépendre de ça.
+    this.model = process.env.DEEPSEEK_MODEL ?? "deepseek-flash";
     this.baseUrl = "https://api.deepseek.com";
   }
 
@@ -57,21 +67,50 @@ export class DeepSeekProvider implements LLMProvider {
       }
     }
 
+    // Le mode "thinking" est actif par défaut chez DeepSeek. Il double la latence
+    // et les tokens de sortie, renvoie souvent un content vide, et ne produit pas
+    // de meilleures requêtes ici : on le désactive.
+    //
+    // tools vide => on n'envoie pas le champ, ce qui force le modèle à rédiger
+    // sa réponse au lieu d'appeler un outil (voir la conclusion forcée côté route).
     const body = {
       model: this.model,
       max_tokens: 4096,
+      thinking: { type: "disabled" as const },
       messages: expanded,
-      tools: tools.map((t) => ({
-        type: "function" as const,
-        function: {
-          name: t.name,
-          description: t.description,
-          parameters: t.input_schema,
-        },
-      })),
-      tool_choice: "auto",
+      ...(tools.length > 0
+        ? {
+            tools: tools.map((t) => ({
+              type: "function" as const,
+              function: {
+                name: t.name,
+                description: t.description,
+                parameters: t.input_schema,
+              },
+            })),
+            tool_choice: "auto" as const,
+          }
+        : {}),
     };
 
+    // DeepSeek coupe parfois la connexion en cours de requête (SocketError), et
+    // renvoie parfois des arguments de tool_call tronqués (JSON invalide). Dans les
+    // deux cas la requête est perdue sans avoir rien produit : on réessaie.
+    let lastErr: unknown;
+    for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+      try {
+        return await this.attempt(body);
+      } catch (err) {
+        lastErr = err;
+        const retryable = isTransient(err) || err instanceof SyntaxError;
+        if (!retryable || attempt === RETRY_DELAYS_MS.length) break;
+        await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]));
+      }
+    }
+    throw lastErr;
+  }
+
+  private async attempt(body: unknown): Promise<LLMResponse> {
     const res = await fetch(`${this.baseUrl}/v1/chat/completions`, {
       method: "POST",
       headers: {
@@ -87,7 +126,8 @@ export class DeepSeekProvider implements LLMProvider {
     }
 
     const data: DeepSeekResponse = await res.json();
-    const choice = data.choices[0];
+    const choice = data.choices?.[0];
+    if (!choice) throw new Error("DeepSeek: réponse sans choices");
     const msg = choice.message;
 
     const toolCalls = (msg.tool_calls ?? []).map((tc) => ({

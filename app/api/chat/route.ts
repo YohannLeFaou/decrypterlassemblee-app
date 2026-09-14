@@ -49,13 +49,35 @@ export async function POST(req: NextRequest) {
     rounds: 0,
     python_calls: 0,
     python_errors: 0,
-    status: "ok" as "ok" | "error" | "crash",
+    status: "ok" as
+      | "ok"
+      | "error"
+      | "crash"
+      | "client_disconnected"
+      | "max_rounds"
+      | "no_answer_empty"
+      | "no_answer",
   };
 
   const stream = new ReadableStream({
     async start(controller) {
+      // clientGone : le client s'est vraiment déconnecté (signal d'abort).
+      // sendFailed : un enqueue a échoué pour une autre raison — on arrête
+      // d'écrire, mais sans conclure à un abandon utilisateur.
+      let clientGone = false;
+      let sendFailed = false;
+
+      req.signal.addEventListener("abort", () => {
+        clientGone = true;
+      });
+
       const send = (data: object) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        if (clientGone || sendFailed) return;
+        try {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        } catch {
+          sendFailed = true;
+        }
       };
 
       try {
@@ -64,13 +86,25 @@ export async function POST(req: NextRequest) {
           { role: "user", text: question },
         ];
 
+        // La boucle peut se terminer sans qu'aucun texte n'ait été envoyé :
+        // soit le budget de rounds est épuisé, soit le modèle conclut son tour
+        // avec un contenu vide. Dans les deux cas l'utilisateur ne voit rien,
+        // et il faut lui faire rédiger une réponse.
+        let anyText = false;
+        // Distingue les deux causes : budget de rounds épuisé, ou modèle qui
+        // termine son tour sans rien rédiger.
+        let ranOutOfRounds = false;
+
         for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
+          // Inutile d'appeler le LLM ou le sandbox si personne n'attend la réponse.
+          if (clientGone) break;
           metrics.rounds = round + 1;
           const response = await provider.chat(messages, MCP_TOOLS, SYSTEM_PROMPT);
 
           if (response.text) {
-            const prefix = round > 0 ? "\n\n" : "";
+            const prefix = anyText ? "\n\n" : "";
             send({ type: "text", text: prefix + response.text });
+            anyText = true;
           }
           for (const tc of response.toolCalls) {
             send({ type: "tool_call", name: tc.name });
@@ -96,14 +130,55 @@ export async function POST(req: NextRequest) {
           }
 
           messages.push({ role: "tool_result", toolResults });
+
+          // Dernier tour consommé alors que le modèle voulait continuer :
+          // c'est le budget qui a manqué, pas le modèle qui a renoncé.
+          if (round === MAX_TOOL_ROUNDS - 1) ranOutOfRounds = true;
+        }
+
+        // Sans ce rattrapage, la boucle sortait en silence et l'utilisateur
+        // n'obtenait aucune réponse malgré les données déjà collectées.
+        if (!anyText && !clientGone && metrics.python_calls > 0) {
+          metrics.status = ranOutOfRounds ? "max_rounds" : "no_answer_empty";
+          messages.push({
+            role: "user",
+            text:
+              "Rédige maintenant ta réponse finale à partir des seules données déjà " +
+              "collectées, sans nouvelle analyse. Si elles ne suffisent pas à répondre " +
+              "complètement, expose ce que tu as trouvé et indique clairement ce qui manque.",
+          });
+          // Appel sans outils : le modèle ne peut que rédiger.
+          const final = await provider.chat(messages, [], SYSTEM_PROMPT);
+          if (final.text) {
+            send({ type: "text", text: final.text });
+            anyText = true;
+          }
+        }
+
+        // Le rattrapage lui-même peut échouer : ne jamais terminer sur un écran vide.
+        if (!anyText && !clientGone) {
+          metrics.status = "no_answer";
+          send({
+            type: "text",
+            text: "Je n'ai pas réussi à formuler une réponse à cette question. Reformulez-la ou posez-la en plusieurs fois.",
+          });
         }
 
         send({ type: "done" });
       } catch (err) {
-        metrics.status = "crash";
-        console.error(`[chat] CRASH:`, err);
-        send({ type: "error", message: String(err) });
+        // Un abandon utilisateur n'est pas un bug applicatif : ne pas le compter
+        // comme un crash, sinon les métriques mélangent les deux.
+        if (clientGone) {
+          metrics.status = "client_disconnected";
+        } else {
+          metrics.status = "crash";
+          console.error(`[chat] CRASH:`, err);
+          send({ type: "error", message: String(err) });
+        }
       } finally {
+        if (clientGone && metrics.status !== "crash") {
+          metrics.status = "client_disconnected";
+        }
         logRequest({
           event: "chat",
           ip_hash: hashIp(ip),
@@ -117,7 +192,11 @@ export async function POST(req: NextRequest) {
           status: metrics.status,
           duration_ms: Date.now() - startMs,
         });
-        controller.close();
+        try {
+          controller.close();
+        } catch {
+          // déjà fermé côté client
+        }
       }
     },
   });
