@@ -94,7 +94,10 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          # 256M provoquait un OOM-kill silencieux (exit 0, pas de log d'erreur)
+          # à la première compilation à la demande de /api/send par Next.js —
+          # observé en pic à ~202M avant le crash.
+          memory: 512M
     restart: unless-stopped
 
   caddy:
