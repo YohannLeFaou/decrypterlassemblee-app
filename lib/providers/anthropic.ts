@@ -7,7 +7,11 @@ export class AnthropicProvider implements LLMProvider {
   private model: string;
 
   constructor() {
-    this.client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    // Sans limite, un fournisseur muet laisse le visiteur attendre sans fin.
+    this.client = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+      timeout: Number(process.env.ANTHROPIC_TIMEOUT_MS ?? 60_000),
+    });
     this.model = process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5-20251001";
   }
 

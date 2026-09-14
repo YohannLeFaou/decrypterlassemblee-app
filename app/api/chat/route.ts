@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
       | "error"
       | "crash"
       | "client_disconnected"
+      | "provider_timeout"
       | "max_rounds"
       | "no_answer_empty"
       | "no_answer",
@@ -170,13 +171,24 @@ export async function POST(req: NextRequest) {
         // comme un crash, sinon les métriques mélangent les deux.
         if (clientGone) {
           metrics.status = "client_disconnected";
+        } else if (err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError")) {
+          // Le fournisseur n'a rien renvoyé dans le délai imparti : ce n'est pas
+          // un bug du site, et le visiteur mérite mieux qu'une erreur brute.
+          metrics.status = "provider_timeout";
+          console.error(`[chat] TIMEOUT fournisseur:`, err);
+          send({
+            type: "text",
+            text: "Le service d'analyse ne répond pas pour le moment. Réessayez dans quelques minutes.",
+          });
         } else {
           metrics.status = "crash";
           console.error(`[chat] CRASH:`, err);
           send({ type: "error", message: String(err) });
         }
       } finally {
-        if (clientGone && metrics.status !== "crash") {
+        // Ne pas masquer une cause déjà identifiée : un crash ou un timeout
+        // fournisseur reste la vraie raison, même si le visiteur est parti entre-temps.
+        if (clientGone && metrics.status !== "crash" && metrics.status !== "provider_timeout") {
           metrics.status = "client_disconnected";
         }
         logRequest({

@@ -22,13 +22,27 @@ interface DeepSeekResponse {
   }[];
 }
 
-/** Erreurs réseau transitoires côté fournisseur : la requête n'a pas abouti, un retry a du sens. */
+/**
+ * Erreurs transitoires côté fournisseur : la requête n'a pas abouti, un retry a
+ * du sens. Inclut le dépassement de notre propre timeout (AbortError) : un modèle
+ * saturé peut rester muet indéfiniment, comme observé lors de l'indisponibilité
+ * de deepseek-flash.
+ */
 function isTransient(err: unknown): boolean {
+  if (err instanceof Error && err.name === "TimeoutError") return true;
+  if (err instanceof Error && err.name === "AbortError") return true;
   const msg = err instanceof Error ? `${err.message} ${String(err.cause ?? "")}` : String(err);
   return /fetch failed|other side closed|ECONNRESET|ETIMEDOUT|EPIPE|socket hang up|terminated/i.test(msg);
 }
 
 const RETRY_DELAYS_MS = [500, 1500];
+
+/**
+ * Au-delà, on considère le fournisseur muet. Sans cette limite, un appel bloqué
+ * laisse le visiteur attendre sans fin et la requête n'est jamais journalisée
+ * (le log est écrit en fin de traitement).
+ */
+const REQUEST_TIMEOUT_MS = Number(process.env.DEEPSEEK_TIMEOUT_MS ?? 60_000);
 
 export class DeepSeekProvider implements LLMProvider {
   private apiKey: string;
@@ -118,6 +132,7 @@ export class DeepSeekProvider implements LLMProvider {
         Authorization: `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
 
     if (!res.ok) {

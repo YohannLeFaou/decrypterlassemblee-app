@@ -113,6 +113,8 @@ export class MistralProvider implements LLMProvider {
         Authorization: `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify(body),
+      // Sans limite, un fournisseur muet laisse le visiteur attendre sans fin.
+      signal: AbortSignal.timeout(Number(process.env.MISTRAL_TIMEOUT_MS ?? 60_000)),
     });
 
     if (!res.ok) {
